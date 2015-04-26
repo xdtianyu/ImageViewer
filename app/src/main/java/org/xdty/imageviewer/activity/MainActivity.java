@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,6 +13,7 @@ import android.widget.ImageView;
 
 import org.xdty.imageviewer.R;
 import org.xdty.imageviewer.model.Config;
+import org.xdty.imageviewer.utils.SmbFileHelper;
 import org.xdty.imageviewer.utils.Utils;
 import org.xdty.imageviewer.view.ImageAdapter;
 
@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
@@ -75,7 +76,7 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        Log.d(TAG, "onBackPressed");
+        //Log.d(TAG, "onBackPressed");
         if (imageViewer.getVisibility()==View.VISIBLE) {
             imageViewer.setVisibility(View.GONE);
         } else if (mPathStack.size()>0) {
@@ -122,8 +123,12 @@ public class MainActivity extends Activity {
                 try {
                     SmbFile file = new SmbFile(path, auth);
                     SmbFile[] lists = file.listFiles();
+
+                    // sort by filename
+                    Arrays.sort(lists, SmbFileHelper.NAME_COMPARATOR);
+
                     for (SmbFile s:lists) {
-                        Log.d(TAG, s.getName());
+                        //Log.d(TAG, s.getName());
                         // only show images and directories
                         if (s.isDirectory() || s.isFile() && Utils.isImage(s.getName())) {
                             mImageList.add(s);
