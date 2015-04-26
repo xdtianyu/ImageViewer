@@ -14,6 +14,7 @@ import android.widget.ImageView;
 
 import org.xdty.imageviewer.R;
 import org.xdty.imageviewer.model.Config;
+import org.xdty.imageviewer.utils.Utils;
 import org.xdty.imageviewer.view.ImageAdapter;
 
 import java.io.IOException;
@@ -123,7 +124,10 @@ public class MainActivity extends Activity {
                     SmbFile[] lists = file.listFiles();
                     for (SmbFile s:lists) {
                         Log.d(TAG, s.getName());
-                        mImageList.add(s);
+                        // only show images and directories
+                        if (s.isDirectory() || s.isFile() && Utils.isImage(s.getName())) {
+                            mImageList.add(s);
+                        }
                     }
                     notifyListChanged();
                 } catch (MalformedURLException e) {
