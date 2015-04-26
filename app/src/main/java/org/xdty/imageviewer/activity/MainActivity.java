@@ -4,10 +4,12 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -16,6 +18,7 @@ import org.xdty.imageviewer.R;
 import org.xdty.imageviewer.model.Config;
 import org.xdty.imageviewer.utils.SmbFileHelper;
 import org.xdty.imageviewer.utils.Utils;
+import org.xdty.imageviewer.view.HackyViewPager;
 import org.xdty.imageviewer.view.ImageAdapter;
 
 import java.io.IOException;
@@ -28,7 +31,7 @@ import java.util.Arrays;
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
-import uk.co.senab.photoview.PhotoViewAttacher;
+import uk.co.senab.photoview.PhotoView;
 
 
 public class MainActivity extends Activity {
@@ -42,12 +45,6 @@ public class MainActivity extends Activity {
     private ArrayDeque<String> mPathStack = new ArrayDeque<>();
     private String mCurrentPath = Config.server + Config.sharedFolder;
 
-    private ImageView imageViewer;
-
-    private PhotoViewAttacher mAttacher;
-
-    private static final String ISLOCKED_ARG = "isLocked";
-
     private ViewPager mViewPager;
 
     @Override
@@ -59,8 +56,8 @@ public class MainActivity extends Activity {
         imageAdapter = new ImageAdapter(this, mImageList);
         gridView.setAdapter(imageAdapter);
 
-        imageViewer = (ImageView)findViewById(R.id.image_viewer);
-        mAttacher = new PhotoViewAttacher(imageViewer);
+
+        mViewPager = (HackyViewPager) findViewById(R.id.viewpager);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -71,7 +68,8 @@ public class MainActivity extends Activity {
                         mCurrentPath = mImageList.get(position).getPath();
                         updateFileGrid();
                     } else {
-                        loadSambaImage(mImageList.get(position));
+                        mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
+                        mViewPager.setVisibility(View.VISIBLE);
                     }
                 } catch (SmbException e) {
                     e.printStackTrace();
@@ -86,8 +84,8 @@ public class MainActivity extends Activity {
     @Override
     public void onBackPressed() {
         //Log.d(TAG, "onBackPressed");
-        if (imageViewer.getVisibility()==View.VISIBLE) {
-            imageViewer.setVisibility(View.GONE);
+        if (mViewPager.getVisibility()==View.VISIBLE) {
+            mViewPager.setVisibility(View.GONE);
         } else if (mPathStack.size()>0) {
             mCurrentPath = mPathStack.pop();
             updateFileGrid();
@@ -154,7 +152,7 @@ public class MainActivity extends Activity {
 
     }
 
-    private void loadSambaImage(final SmbFile file) {
+    private void loadSambaImage(final SmbFile file, final ImageView imageViewer) {
 
         new Thread(new Runnable() {
             @Override
@@ -167,7 +165,6 @@ public class MainActivity extends Activity {
                         @Override
                         public void run() {
                             imageViewer.setImageBitmap(bitmap);
-                            imageViewer.setVisibility(View.VISIBLE);
                         }
                     });
                 } catch (IOException e) {
@@ -184,6 +181,38 @@ public class MainActivity extends Activity {
                 imageAdapter.notifyDataSetChanged();
             }
         });
+    }
+
+    private class ViewPagerAdapter extends PagerAdapter {
+
+        private ArrayList<SmbFile> fileList;
+
+        public ViewPagerAdapter(ArrayList<SmbFile> files) {
+            fileList = files;
+        }
+
+        @Override
+        public int getCount() {
+            return fileList.size();
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            PhotoView photoView = new PhotoView(container.getContext());
+            loadSambaImage(fileList.get(position), photoView);
+            container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            return photoView;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            container.removeView((View)object);
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object o) {
+            return view==o;
+        }
     }
 
 }
