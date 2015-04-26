@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +28,7 @@ import java.util.Arrays;
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
+import uk.co.senab.photoview.PhotoViewAttacher;
 
 
 public class MainActivity extends Activity {
@@ -42,6 +44,12 @@ public class MainActivity extends Activity {
 
     private ImageView imageViewer;
 
+    private PhotoViewAttacher mAttacher;
+
+    private static final String ISLOCKED_ARG = "isLocked";
+
+    private ViewPager mViewPager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,7 +59,8 @@ public class MainActivity extends Activity {
         imageAdapter = new ImageAdapter(this, mImageList);
         gridView.setAdapter(imageAdapter);
 
-       imageViewer = (ImageView)findViewById(R.id.image_viewer);
+        imageViewer = (ImageView)findViewById(R.id.image_viewer);
+        mAttacher = new PhotoViewAttacher(imageViewer);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -176,6 +185,5 @@ public class MainActivity extends Activity {
             }
         });
     }
-
 
 }
