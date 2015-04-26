@@ -1,6 +1,7 @@
 package org.xdty.imageviewer.activity;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +19,7 @@ import org.xdty.imageviewer.view.ImageAdapter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 
 import jcifs.smb.NtlmPasswordAuthentication;
@@ -33,6 +35,11 @@ public class MainActivity extends Activity {
 
     private ImageAdapter imageAdapter;
 
+    private ArrayDeque<String> mPathStack = new ArrayDeque<>();
+    private String mCurrentPath = Config.server + Config.sharedFolder;
+
+    private ImageView imageViewer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,30 +49,40 @@ public class MainActivity extends Activity {
         imageAdapter = new ImageAdapter(this, mImageList);
         gridView.setAdapter(imageAdapter);
 
-        final ImageView imageView = (ImageView)findViewById(R.id.image_viewer);
+       imageViewer = (ImageView)findViewById(R.id.image_viewer);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 try {
                     if (mImageList.get(position).isDirectory()) {
-                        loadSambaDir(mImageList.get(position).getPath());
+                        mPathStack.push(mCurrentPath);
+                        mCurrentPath = mImageList.get(position).getPath();
+                        updateFileGrid();
                     } else {
-                        SmbFile file = mImageList.get(position);
-                        InputStream inputStream = file.getInputStream();
-                        imageView.setImageBitmap(BitmapFactory.decodeStream(inputStream));
-                        imageView.setVisibility(View.VISIBLE);
+                        loadSambaImage(mImageList.get(position));
                     }
                 } catch (SmbException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
                     e.printStackTrace();
                 }
 
             }
         });
 
-        loadSambaDir(Config.server + Config.sharedFolder);
+        updateFileGrid();
+    }
+
+    @Override
+    public void onBackPressed() {
+        Log.d(TAG, "onBackPressed");
+        if (imageViewer.getVisibility()==View.VISIBLE) {
+            imageViewer.setVisibility(View.GONE);
+        } else if (mPathStack.size()>0) {
+            mCurrentPath = mPathStack.pop();
+            updateFileGrid();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
@@ -88,6 +105,10 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateFileGrid() {
+        loadSambaDir(mCurrentPath);
     }
 
     private void loadSambaDir(final String path) {
@@ -113,6 +134,29 @@ public class MainActivity extends Activity {
             }
         }).start();
 
+    }
+
+    private void loadSambaImage(final SmbFile file) {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                InputStream inputStream = null;
+                try {
+                    inputStream = file.getInputStream();
+                    final Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            imageViewer.setImageBitmap(bitmap);
+                            imageViewer.setVisibility(View.VISIBLE);
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     private void notifyListChanged() {
