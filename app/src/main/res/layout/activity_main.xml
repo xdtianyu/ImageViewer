@@ -20,8 +20,11 @@
             android:layout_height="fill_parent">
             <org.xdty.imageviewer.view.HackyViewPager
                 android:id="@+id/viewpager"
+                android:background="@android:color/black"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                >
             </org.xdty.imageviewer.view.HackyViewPager>
         </LinearLayout>
     </FrameLayout>

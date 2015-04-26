@@ -1,6 +1,7 @@
 package org.xdty.imageviewer.activity;
 
 import android.app.Activity;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -68,8 +70,10 @@ public class MainActivity extends Activity {
                         mCurrentPath = mImageList.get(position).getPath();
                         updateFileGrid();
                     } else {
+                        // fixme: have mem leak here.
                         mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
                         mViewPager.setVisibility(View.VISIBLE);
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                     }
                 } catch (SmbException e) {
                     e.printStackTrace();
@@ -82,10 +86,20 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (mViewPager.getVisibility()==View.VISIBLE) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+    }
+
+    @Override
     public void onBackPressed() {
         //Log.d(TAG, "onBackPressed");
         if (mViewPager.getVisibility()==View.VISIBLE) {
             mViewPager.setVisibility(View.GONE);
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            mViewPager.setAdapter(null);
         } else if (mPathStack.size()>0) {
             mCurrentPath = mPathStack.pop();
             updateFileGrid();
