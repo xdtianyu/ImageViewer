@@ -36,7 +36,7 @@ import jcifs.smb.SmbFile;
 import uk.co.senab.photoview.PhotoView;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements ViewPager.OnPageChangeListener {
 
     public final String TAG = "MainActivity";
 
@@ -70,11 +70,16 @@ public class MainActivity extends Activity {
                         mCurrentPath = mImageList.get(position).getPath();
                         updateFileGrid();
                     } else {
-                        // fixme: have mem leak here.
+                        // fixme: may have mem leak here.
                         mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
+                        mViewPager.setOffscreenPageLimit(2);
                         mViewPager.setCurrentItem(position);
                         mViewPager.setVisibility(View.VISIBLE);
+                        mViewPager.setOnPageChangeListener(MainActivity.this);
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                        //setContentView(R.layout.activity_main);
                     }
                 } catch (SmbException e) {
                     e.printStackTrace();
@@ -89,9 +94,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (mViewPager.getVisibility()==View.VISIBLE) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
     }
 
     @Override
@@ -101,6 +103,8 @@ public class MainActivity extends Activity {
             mViewPager.setVisibility(View.GONE);
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             mViewPager.setAdapter(null);
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
         } else if (mPathStack.size()>0) {
             mCurrentPath = mPathStack.pop();
             updateFileGrid();
@@ -167,7 +171,7 @@ public class MainActivity extends Activity {
 
     }
 
-    private void loadSambaImage(final SmbFile file, final ImageView imageViewer) {
+    private void loadSambaImage(final SmbFile file, final ImageView imageViewer, final int position) {
 
         new Thread(new Runnable() {
             @Override
@@ -198,6 +202,21 @@ public class MainActivity extends Activity {
         });
     }
 
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+
+    }
+
     private class ViewPagerAdapter extends PagerAdapter {
 
         private ArrayList<SmbFile> fileList;
@@ -214,7 +233,7 @@ public class MainActivity extends Activity {
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             PhotoView photoView = new PhotoView(container.getContext());
-            loadSambaImage(fileList.get(position), photoView);
+            loadSambaImage(fileList.get(position), photoView, position);
             container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             return photoView;
         }
