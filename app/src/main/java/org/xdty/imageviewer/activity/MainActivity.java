@@ -72,6 +72,7 @@ public class MainActivity extends Activity {
                     } else {
                         // fixme: have mem leak here.
                         mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
+                        mViewPager.setCurrentItem(position);
                         mViewPager.setVisibility(View.VISIBLE);
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                     }
