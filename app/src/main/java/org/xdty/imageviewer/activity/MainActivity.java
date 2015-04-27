@@ -35,6 +35,8 @@ import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import uk.co.senab.photoview.PhotoView;
 
+import static org.xdty.imageviewer.utils.Utils.RotateBitmap;
+
 
 public class MainActivity extends Activity implements ViewPager.OnPageChangeListener {
 
@@ -179,7 +181,15 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 InputStream inputStream = null;
                 try {
                     inputStream = file.getInputStream();
-                    final Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                    final Bitmap tmpBitmap = BitmapFactory.decodeStream(inputStream);
+                    final Bitmap bitmap;
+
+                    if (tmpBitmap.getHeight()>tmpBitmap.getWidth()) {
+                        bitmap =RotateBitmap(tmpBitmap, -90);
+                    } else {
+                        bitmap = tmpBitmap;
+                    }
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
