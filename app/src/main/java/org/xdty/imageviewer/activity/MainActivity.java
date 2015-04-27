@@ -9,6 +9,7 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -81,6 +82,10 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
                         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+                        //getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+                        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+
                         //setContentView(R.layout.activity_main);
                     }
                 } catch (SmbException e) {
@@ -113,6 +118,19 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            if (mViewPager.getVisibility()==View.VISIBLE) {
+                // hide navigation bar
+                if (getWindow().getDecorView().getSystemUiVisibility()!=View.SYSTEM_UI_FLAG_LOW_PROFILE) {
+                    getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev);
     }
 
     @Override
