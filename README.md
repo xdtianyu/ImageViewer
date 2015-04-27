@@ -1,6 +1,6 @@
 # ImageViewer #
 
-ImageViewer is an photo viewer mainly work for browsing LAN/WAN's samba share. 
+ImageViewer is a quick browsing for LAN/WAN's samba shared photos. 
 
 ### Contribution guidelines ###
 
