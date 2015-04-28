@@ -10,7 +10,7 @@ ImageViewer is a quick browsing for LAN/WAN's samba shared photos.
 
 ### Who do I talk to? ###
 
-* xdtianyu#gmail.com
+* xdtianyu@gmail.com
 
 ### Thanks to ###
 
