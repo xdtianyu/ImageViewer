@@ -18,3 +18,5 @@ ImageViewer is a quick browsing for LAN/WAN's samba shared photos.
 [JCIFS](https://jcifs.samba.org/): an Open Source client library that implements the CIFS/SMB networking protocol in 100% Java
 
 [PhotoView](https://github.com/chrisbanes/PhotoView): an easily usable implementation of a zooming Android ImageView
+
+[JazzyViewPager](https://github.com/jfeinstein10/JazzyViewPager): an easy to use ViewPager that adds an awesome set of custom swiping animations
