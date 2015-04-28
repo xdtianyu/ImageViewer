@@ -18,14 +18,14 @@
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent">
-            <org.xdty.imageviewer.view.HackyViewPager
+            <org.xdty.imageviewer.view.JazzyViewPager
                 android:id="@+id/viewpager"
                 android:background="@android:color/black"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="gone"
                 >
-            </org.xdty.imageviewer.view.HackyViewPager>
+            </org.xdty.imageviewer.view.JazzyViewPager>
         </LinearLayout>
     </FrameLayout>
 </RelativeLayout>

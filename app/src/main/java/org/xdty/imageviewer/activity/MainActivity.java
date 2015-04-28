@@ -21,8 +21,8 @@ import org.xdty.imageviewer.R;
 import org.xdty.imageviewer.model.Config;
 import org.xdty.imageviewer.utils.SmbFileHelper;
 import org.xdty.imageviewer.utils.Utils;
-import org.xdty.imageviewer.view.HackyViewPager;
 import org.xdty.imageviewer.view.ImageAdapter;
+import org.xdty.imageviewer.view.JazzyViewPager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,7 +50,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private ArrayDeque<String> mPathStack = new ArrayDeque<>();
     private String mCurrentPath = Config.server + Config.sharedFolder;
 
-    private ViewPager mViewPager;
+    private JazzyViewPager mViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +62,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         gridView.setAdapter(imageAdapter);
 
 
-        mViewPager = (HackyViewPager) findViewById(R.id.viewpager);
+        mViewPager = (JazzyViewPager)findViewById(R.id.viewpager);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -74,6 +74,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         updateFileGrid();
                     } else {
                         // fixme: may have mem leak here.
+                        mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Standard);
+                        //mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Accordion);
                         mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
                         mViewPager.setOffscreenPageLimit(2);
                         mViewPager.setCurrentItem(position);
@@ -263,6 +265,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             PhotoView photoView = new PhotoView(container.getContext());
             loadSambaImage(fileList.get(position), photoView, position);
             container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            mViewPager.setObjectForPosition(photoView, position);
             return photoView;
         }
 
