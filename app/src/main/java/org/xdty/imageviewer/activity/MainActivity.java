@@ -17,13 +17,14 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
 
+import com.almeros.android.multitouch.RotateGestureDetector;
+
 import org.xdty.imageviewer.R;
 import org.xdty.imageviewer.model.Config;
 import org.xdty.imageviewer.utils.SmbFileHelper;
 import org.xdty.imageviewer.utils.Utils;
 import org.xdty.imageviewer.view.ImageAdapter;
 import org.xdty.imageviewer.view.JazzyViewPager;
-import org.xdty.imageviewer.view.RotationGestureDetector;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +32,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
@@ -42,7 +44,7 @@ import static org.xdty.imageviewer.utils.Utils.RotateBitmap;
 
 public class MainActivity extends Activity implements ViewPager.OnPageChangeListener {
 
-    public final String TAG = "MainActivity";
+    public final static String TAG = "MainActivity";
 
     private ArrayList<SmbFile> mImageList = new ArrayList<>();
 
@@ -55,7 +57,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     private android.view.GestureDetector mClickDetector;
 
-    private RotationGestureDetector mRotationDetector;
+    private RotateGestureDetector mRotationDetector;
+
+    private HashMap<Integer, Integer> rotationMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +70,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         imageAdapter = new ImageAdapter(this, mImageList);
         gridView.setAdapter(imageAdapter);
 
-        // handle only single tap event
+        // handle only single tap event, show or hide systemUI
         mClickDetector = new android.view.GestureDetector(this,
                 new android.view.GestureDetector.SimpleOnGestureListener(){
                     @Override
@@ -80,13 +84,62 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     }
                 });
 
-        mRotationDetector = new RotationGestureDetector(new RotationGestureDetector.OnRotationGestureListener() {
+        // handle rotate gesture, rotate the image and save state.
+        mRotationDetector = new RotateGestureDetector(this, new RotateGestureDetector.OnRotateGestureListener() {
+
+            PhotoView photoView = null;
+            int rotate = 0;
+
             @Override
-            public void OnRotation(RotationGestureDetector rotationDetector) {
-                View view = mViewPager.getChildAt(mViewPager.getCurrentItem());
-                if (view!=null) {
-                    PhotoView photoView = (PhotoView)view.findViewById(R.id.photo_view);
-                    photoView.setRotation(-rotationDetector.getAngle());
+            public boolean onRotate(RotateGestureDetector detector) {
+
+                if (photoView!=null) {
+                    float degree = detector.getRotationDegreesDelta();
+                    photoView.setRotation(-degree+rotate);
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onRotateBegin(RotateGestureDetector detector) {
+                photoView = (PhotoView)mViewPager.findViewWithTag(mViewPager.getCurrentItem());
+                if (photoView!=null) {
+                    int position = (int)photoView.getTag();
+                    if (rotationMap.containsKey(position)) {
+                        rotate = rotationMap.get(position);
+                    }
+                }
+                return true;
+            }
+
+            @Override
+            public void onRotateEnd(RotateGestureDetector detector) {
+                if (photoView!=null) {
+                    // set rotation and save state
+                    float degree = -detector.getRotationDegreesDelta()+rotate;
+
+                    int n = Math.round(degree/90);
+                    n = n%4;
+                    if (n<0) {
+                        n += 4;
+                    }
+                    switch (n) {
+                        case 0:
+                            photoView.setRotation(0);
+                            break;
+                        case 1:
+                            photoView.setRotation(90);
+                            break;
+                        case 2:
+                            photoView.setRotation(180);
+                            break;
+                        case 3:
+                            photoView.setRotation(270);
+                            break;
+                    }
+                    rotationMap.put((int) photoView.getTag(), (int) photoView.getRotation());
+                    rotate = 0;
+                    photoView = null;
                 }
             }
         });
@@ -197,6 +250,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private void loadSambaDir(final String path) {
 
         mImageList.clear();
+        rotationMap.clear();
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -296,7 +350,13 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             PhotoView photoView = new PhotoView(container.getContext());
-            photoView.setId(R.id.photo_view);
+            photoView.setTag(position);
+
+            // restore rotation
+            if (rotationMap.containsKey(position)) {
+                int rotate = rotationMap.get(position);
+                photoView.setRotation(rotate);
+            }
 
             loadSambaImage(fileList.get(position), photoView, position);
             container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
