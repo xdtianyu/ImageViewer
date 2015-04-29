@@ -7,12 +7,12 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -52,6 +52,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     private JazzyViewPager mViewPager;
 
+    android.view.GestureDetector clickDetector;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +63,19 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         imageAdapter = new ImageAdapter(this, mImageList);
         gridView.setAdapter(imageAdapter);
 
+        // handle only single tap event
+        clickDetector = new android.view.GestureDetector(this,
+                new android.view.GestureDetector.SimpleOnGestureListener(){
+                    @Override
+                    public boolean onSingleTapConfirmed(MotionEvent e) {
+                        if (isSystemUIVisible()) {
+                            hideSystemUI();
+                        } else {
+                            showSystemUI();
+                        }
+                        return true;
+                    }
+                });
 
         mViewPager = (JazzyViewPager)findViewById(R.id.viewpager);
 
@@ -82,11 +97,11 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         mViewPager.setVisibility(View.VISIBLE);
                         mViewPager.setOnPageChangeListener(MainActivity.this);
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                        //getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                        //getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
                         //getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-                        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+                        hideSystemUI();
 
                         //setContentView(R.layout.activity_main);
                     }
@@ -112,8 +127,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             mViewPager.setVisibility(View.GONE);
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             mViewPager.setAdapter(null);
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+            showSystemUI();
         } else if (mPathStack.size()>0) {
             mCurrentPath = mPathStack.pop();
             updateFileGrid();
@@ -123,15 +137,19 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     }
 
     @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        Log.d(TAG, "onWindowFocusChanged");
+    }
+
+    @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            if (mViewPager.getVisibility()==View.VISIBLE) {
-                // hide navigation bar
-                if (getWindow().getDecorView().getSystemUiVisibility()!=View.SYSTEM_UI_FLAG_LOW_PROFILE) {
-                    getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
-                }
-            }
+
+        if (mViewPager.getVisibility() == View.VISIBLE) {
+            // hide or show systemUI
+            clickDetector.onTouchEvent(ev);
         }
+
         return super.dispatchTouchEvent(ev);
     }
 
@@ -278,6 +296,27 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         public boolean isViewFromObject(View view, Object o) {
             return view==o;
         }
+    }
+
+    private void hideSystemUI() {
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+    }
+
+    private void showSystemUI() {
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+    }
+
+    private boolean isSystemUIVisible() {
+        return (getWindow().getDecorView().getSystemUiVisibility() & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0;
     }
 
 }
