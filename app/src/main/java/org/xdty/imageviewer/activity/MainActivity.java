@@ -23,6 +23,7 @@ import org.xdty.imageviewer.utils.SmbFileHelper;
 import org.xdty.imageviewer.utils.Utils;
 import org.xdty.imageviewer.view.ImageAdapter;
 import org.xdty.imageviewer.view.JazzyViewPager;
+import org.xdty.imageviewer.view.RotationGestureDetector;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,7 +53,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     private JazzyViewPager mViewPager;
 
-    android.view.GestureDetector clickDetector;
+    private android.view.GestureDetector mClickDetector;
+
+    private RotationGestureDetector mRotationDetector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +67,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         gridView.setAdapter(imageAdapter);
 
         // handle only single tap event
-        clickDetector = new android.view.GestureDetector(this,
+        mClickDetector = new android.view.GestureDetector(this,
                 new android.view.GestureDetector.SimpleOnGestureListener(){
                     @Override
                     public boolean onSingleTapConfirmed(MotionEvent e) {
@@ -76,6 +79,17 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         return true;
                     }
                 });
+
+        mRotationDetector = new RotationGestureDetector(new RotationGestureDetector.OnRotationGestureListener() {
+            @Override
+            public void OnRotation(RotationGestureDetector rotationDetector) {
+                View view = mViewPager.getChildAt(mViewPager.getCurrentItem());
+                if (view!=null) {
+                    PhotoView photoView = (PhotoView)view.findViewById(R.id.photo_view);
+                    photoView.setRotation(-rotationDetector.getAngle());
+                }
+            }
+        });
 
         mViewPager = (JazzyViewPager)findViewById(R.id.viewpager);
 
@@ -147,7 +161,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         if (mViewPager.getVisibility() == View.VISIBLE) {
             // hide or show systemUI
-            clickDetector.onTouchEvent(ev);
+            mClickDetector.onTouchEvent(ev);
+            mRotationDetector.onTouchEvent(ev);
         }
 
         return super.dispatchTouchEvent(ev);
@@ -281,6 +296,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             PhotoView photoView = new PhotoView(container.getContext());
+            photoView.setId(R.id.photo_view);
+
             loadSambaImage(fileList.get(position), photoView, position);
             container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             mViewPager.setObjectForPosition(photoView, position);
