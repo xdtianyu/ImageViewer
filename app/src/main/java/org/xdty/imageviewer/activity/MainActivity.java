@@ -83,6 +83,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                             hideSystemUI();
                         } else {
                             showSystemUI();
+                            hideSystemUIDelayed();
                         }
                         return true;
                     }
@@ -439,6 +440,15 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+    }
+
+    private void hideSystemUIDelayed() {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                hideSystemUI();
+            }
+        }, 3000);
     }
 
     private boolean isSystemUIVisible() {
