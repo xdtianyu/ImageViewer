@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -69,6 +70,11 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         GridView gridView = (GridView) findViewById(R.id.gridView);
         imageAdapter = new ImageAdapter(this, mImageList);
         gridView.setAdapter(imageAdapter);
+
+        mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
+        mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
+        mViewPager.setOffscreenPageLimit(2);
+        mViewPager.setOnPageChangeListener(MainActivity.this);
 
         // handle only single tap event, show or hide systemUI
         mClickDetector = new android.view.GestureDetector(this,
@@ -144,8 +150,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             }
         });
 
-        mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
-
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -158,11 +162,12 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         // fixme: may have mem leak here.
                         mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Standard);
                         //mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Accordion);
-                        mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
-                        mViewPager.setOffscreenPageLimit(2);
+
+                        mViewPager.getAdapter().notifyDataSetChanged();
+
                         mViewPager.setCurrentItem(position);
                         mViewPager.setVisibility(View.VISIBLE);
-                        mViewPager.setOnPageChangeListener(MainActivity.this);
+
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                         //getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
                         //getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -193,7 +198,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         if (mViewPager.getVisibility() == View.VISIBLE) {
             mViewPager.setVisibility(View.GONE);
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-            mViewPager.setAdapter(null);
             showSystemUI();
         } else if (mPathStack.size() > 0) {
             mCurrentPath = mPathStack.pop();
@@ -293,6 +297,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
                     if (tmpBitmap.getHeight() > tmpBitmap.getWidth()) {
                         bitmap = RotateBitmap(tmpBitmap, -90);
+                        tmpBitmap.recycle();
                     } else {
                         bitmap = tmpBitmap;
                     }
@@ -370,7 +375,17 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            PhotoView photoView = new PhotoView(container.getContext());
+
+            PhotoView photoView = (PhotoView)container.findViewWithTag(position);
+
+            if (photoView!=null) {
+                BitmapDrawable bitmapDrawable = (BitmapDrawable)photoView.getDrawable();
+                if (bitmapDrawable!=null) {
+                    bitmapDrawable.getBitmap().recycle();
+                }
+            }
+
+            photoView = new PhotoView(container.getContext());
             photoView.setTag(position);
 
             // restore rotation
@@ -387,12 +402,37 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
+            PhotoView photoView = (PhotoView)((View) object).findViewWithTag(position);
+
+            // release memory
+            if (photoView!=null) {
+                BitmapDrawable bitmapDrawable = (BitmapDrawable)photoView.getDrawable();
+                if (bitmapDrawable!=null) {
+                    bitmapDrawable.getBitmap().recycle();
+                }
+                photoView.setImageDrawable(null);
+            }
+
             container.removeView((View) object);
+            unbindDrawables((View) object);
+            object = null;
         }
 
         @Override
         public boolean isViewFromObject(View view, Object o) {
             return view == o;
+        }
+
+        protected void unbindDrawables(View view) {
+            if (view.getBackground() != null) {
+                view.getBackground().setCallback(null);
+            }
+            if (view instanceof ViewGroup) {
+                for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+                    unbindDrawables(((ViewGroup) view).getChildAt(i));
+                }
+                ((ViewGroup) view).removeAllViews();
+            }
         }
     }
 
