@@ -2,10 +2,12 @@ package org.xdty.imageviewer.activity;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -22,6 +24,7 @@ import com.almeros.android.multitouch.RotateGestureDetector;
 
 import org.xdty.imageviewer.R;
 import org.xdty.imageviewer.model.Config;
+import org.xdty.imageviewer.model.RotateType;
 import org.xdty.imageviewer.utils.SmbFileHelper;
 import org.xdty.imageviewer.utils.Utils;
 import org.xdty.imageviewer.view.ImageAdapter;
@@ -34,6 +37,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
@@ -46,35 +50,29 @@ import static org.xdty.imageviewer.utils.Utils.RotateBitmap;
 public class MainActivity extends Activity implements ViewPager.OnPageChangeListener {
 
     public final static String TAG = "MainActivity";
-
+    private final ReentrantLock sambaLock = new ReentrantLock(true);
     private ArrayList<SmbFile> mImageList = new ArrayList<>();
-
     private ImageAdapter imageAdapter;
-
     private ArrayDeque<String> mPathStack = new ArrayDeque<>();
     private String mCurrentPath = Config.server + Config.sharedFolder;
-
     private JazzyViewPager mViewPager;
-
     private android.view.GestureDetector mClickDetector;
-
     private RotateGestureDetector mRotationDetector;
-
     private HashMap<Integer, Integer> rotationMap = new HashMap<>();
+    private HashMap<Integer, Boolean> orientationMap = new HashMap<>();
+    private Handler handler = new Handler();
+
+    private int mGridClickPosition = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_main);
 
         GridView gridView = (GridView) findViewById(R.id.gridView);
         imageAdapter = new ImageAdapter(this, mImageList);
         gridView.setAdapter(imageAdapter);
-
-        mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
-        mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
-        mViewPager.setOffscreenPageLimit(2);
-        mViewPager.setOnPageChangeListener(MainActivity.this);
 
         // handle only single tap event, show or hide systemUI
         mClickDetector = new android.view.GestureDetector(this,
@@ -160,15 +158,27 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         updateFileGrid();
                     } else {
                         // fixme: may have mem leak here.
+
+                        mGridClickPosition = position;
+
+                        mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
+                        mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
+                        mViewPager.setOnPageChangeListener(MainActivity.this);
+                        mViewPager.setOffscreenPageLimit(2);
+
                         mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Standard);
                         //mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Accordion);
-
                         mViewPager.getAdapter().notifyDataSetChanged();
 
-                        mViewPager.setCurrentItem(position);
+                        mViewPager.setCurrentItem(position, false);
+                        Log.d(TAG, "setCurrentItem:" + position);
                         mViewPager.setVisibility(View.VISIBLE);
 
-                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                        // TODO: read config here
+                        if (Config.rotateType == RotateType.ROTATE_IMAGE_FIT_SCREEN) {
+                            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                        }
+
                         //getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
                         //getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -193,11 +203,22 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     }
 
     @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Log.d(TAG, "onConfigurationChanged");
+    }
+
+    @Override
     public void onBackPressed() {
         //Log.d(TAG, "onBackPressed");
-        if (mViewPager.getVisibility() == View.VISIBLE) {
+        if (mViewPager != null && mViewPager.getVisibility() == View.VISIBLE) {
             mViewPager.setVisibility(View.GONE);
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            mViewPager.removeAllViews();
+            mViewPager = null;
+
+            if (getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            }
             showSystemUI();
         } else if (mPathStack.size() > 0) {
             mCurrentPath = mPathStack.pop();
@@ -216,7 +237,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
 
-        if (mViewPager.getVisibility() == View.VISIBLE) {
+        if (mViewPager != null && mViewPager.getVisibility() == View.VISIBLE) {
             // hide or show systemUI
             mClickDetector.onTouchEvent(ev);
             mRotationDetector.onTouchEvent(ev);
@@ -255,6 +276,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         mImageList.clear();
         rotationMap.clear();
+        orientationMap.clear();
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -289,27 +311,73 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         new Thread(new Runnable() {
             @Override
             public void run() {
+
+                if (mViewPager != null && position != mGridClickPosition) {
+                    try {
+                        Thread.sleep(20);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                sambaLock.lock();
+                Log.d(TAG, "start lock: " + position);
                 InputStream inputStream = null;
                 try {
                     inputStream = file.getInputStream();
                     final Bitmap tmpBitmap = BitmapFactory.decodeStream(inputStream);
                     final Bitmap bitmap;
 
-                    if (tmpBitmap.getHeight() > tmpBitmap.getWidth()) {
-                        bitmap = RotateBitmap(tmpBitmap, -90);
-                        tmpBitmap.recycle();
-                    } else {
-                        bitmap = tmpBitmap;
+                    // TODO: read settings here
+                    switch (Config.rotateType) {
+                        case ROTATE_SCREEN_FIT_IMAGE:
+                            // rotate screen to fit image
+                            if (tmpBitmap.getHeight() > tmpBitmap.getWidth()) {
+                                // save status to orientationMap
+                                orientationMap.put(position, true);
+                            } else {
+                                orientationMap.put(position, false);
+                            }
+                            bitmap = tmpBitmap;
+                            break;
+                        case ROTATE_IMAGE_FIT_SCREEN:
+                            // rotate image to fit screen
+                            if (tmpBitmap.getHeight() > tmpBitmap.getWidth()) {
+                                bitmap = RotateBitmap(tmpBitmap, -90);
+                                tmpBitmap.recycle();
+                            } else {
+                                bitmap = tmpBitmap;
+                            }
+                            break;
+                        default:
+                            bitmap = tmpBitmap;
                     }
 
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             imageViewer.setImageBitmap(bitmap);
+                            Log.d(TAG, "set image bitmap: " + position);
+                            int orientation = getRequestedOrientation();
+
+                            if (mViewPager != null && position == mViewPager.getCurrentItem() && Config.rotateType == RotateType.ROTATE_SCREEN_FIT_IMAGE) {
+                                if (orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                                } else if (!orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                                }
+                            }
+
+                            if (mGridClickPosition == position) {
+                                mGridClickPosition = -1;
+                            }
                         }
                     });
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    Log.d(TAG, "release lock: " + position);
+                    sambaLock.unlock();
                 }
             }
         }).start();
@@ -326,17 +394,34 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
+        //Log.d(TAG, "onPageScrolled:" +position);
     }
 
     @Override
     public void onPageSelected(int position) {
-
+        Log.d(TAG, "onPageSelected:" + position);
     }
 
     @Override
     public void onPageScrollStateChanged(int state) {
+        // rotate screen to fit image size
+        if (state == ViewPager.SCROLL_STATE_IDLE) {
+            final int position = mViewPager.getCurrentItem();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (orientationMap.get(position) != null) {
+                        int orientation = getRequestedOrientation();
 
+                        if (orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                        } else if (!orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                        }
+                    }
+                }
+            }, 10);
+        }
     }
 
     private void hideSystemUI() {
@@ -376,11 +461,11 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
 
-            PhotoView photoView = (PhotoView)container.findViewWithTag(position);
+            PhotoView photoView = (PhotoView) container.findViewWithTag(position);
 
-            if (photoView!=null) {
-                BitmapDrawable bitmapDrawable = (BitmapDrawable)photoView.getDrawable();
-                if (bitmapDrawable!=null) {
+            if (photoView != null) {
+                BitmapDrawable bitmapDrawable = (BitmapDrawable) photoView.getDrawable();
+                if (bitmapDrawable != null) {
                     bitmapDrawable.getBitmap().recycle();
                 }
             }
@@ -394,6 +479,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 photoView.setRotation(rotate);
             }
 
+            Log.d(TAG, "getCurrentItem:" + mViewPager.getCurrentItem());
+            Log.d(TAG, "loadSambaImage: " + position);
             loadSambaImage(fileList.get(position), photoView, position);
             container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             mViewPager.setObjectForPosition(photoView, position);
@@ -402,12 +489,12 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
-            PhotoView photoView = (PhotoView)((View) object).findViewWithTag(position);
+            PhotoView photoView = (PhotoView) ((View) object).findViewWithTag(position);
 
             // release memory
-            if (photoView!=null) {
-                BitmapDrawable bitmapDrawable = (BitmapDrawable)photoView.getDrawable();
-                if (bitmapDrawable!=null) {
+            if (photoView != null) {
+                BitmapDrawable bitmapDrawable = (BitmapDrawable) photoView.getDrawable();
+                if (bitmapDrawable != null) {
                     bitmapDrawable.getBitmap().recycle();
                 }
                 photoView.setImageDrawable(null);
