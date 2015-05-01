@@ -384,6 +384,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                imageAdapter.clearThumbnailList();
                 imageAdapter.notifyDataSetChanged();
             }
         });

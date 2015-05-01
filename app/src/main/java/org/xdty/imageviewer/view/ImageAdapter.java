@@ -42,7 +42,7 @@ public class ImageAdapter extends BaseAdapter {
     private Context mContext;
     private ArrayList<SmbFile> mImageList;
 
-    private ArrayList<String> mThumbnailList = new ArrayList<>();
+    private ArrayList<String> mThumbnailList;
 
     private File mCacheDir;
 
@@ -58,6 +58,7 @@ public class ImageAdapter extends BaseAdapter {
             }
         }
         handler = new Handler();
+        mThumbnailList = new ArrayList<>();
     }
 
     @Override
@@ -96,6 +97,8 @@ public class ImageAdapter extends BaseAdapter {
 
         SmbFile file = mImageList.get(position);
         try {
+            viewHolder.title.setText(file.getName());
+            viewHolder.thumbnail.setTag(file.getName());
             if (file.isDirectory()) {
                 viewHolder.thumbnail.setImageResource(R.mipmap.folder);
             } else {
@@ -107,8 +110,6 @@ public class ImageAdapter extends BaseAdapter {
             if (file.canRead() && file.canWrite()) {
                 viewHolder.lock.setVisibility(View.GONE);
             }
-            viewHolder.title.setText(file.getName());
-            viewHolder.thumbnail.setTag(file.getName());
         } catch (SmbException e) {
             e.printStackTrace();
         }
@@ -121,6 +122,7 @@ public class ImageAdapter extends BaseAdapter {
         new Thread(new Runnable() {
             @Override
             public void run() {
+
                 // get file's md5 and check if thumbnail exist
                 String md5 = Utils.md5(mImageList.get(position));
                 File f = new File(mCacheDir, md5);
@@ -128,10 +130,13 @@ public class ImageAdapter extends BaseAdapter {
                 if (f.exists()) {
                     thumbnailLock.lock();
 
-                    if (!mThumbnailList.contains(mImageList.get(position).getName())) {
+                    // check if is scroll out
+                    if (mImageList.size() > position && !mThumbnailList.contains(mImageList.get(position).getName())) {
                         thumbnailLock.unlock();
                         return;
                     }
+
+                    // set thumbnail
                     try {
                         final Bitmap bitmap;
                         bitmap = BitmapFactory.decodeStream(new FileInputStream(f));
@@ -150,10 +155,13 @@ public class ImageAdapter extends BaseAdapter {
                     }
                 } else {
                     loadingLock.lock();
-                    if (!mThumbnailList.contains(mImageList.get(position).getName())) {
+                    // check if is scroll out
+                    if (mImageList.size() > position && !mThumbnailList.contains(mImageList.get(position).getName())) {
                         loadingLock.unlock();
                         return;
                     }
+
+                    // generate set thumbnail
                     try {
                         Bitmap tmpBitmap = BitmapFactory.decodeStream(mImageList.get(position).getInputStream());
                         final Bitmap bitmap = ThumbnailUtils.extractThumbnail(tmpBitmap, imageView.getWidth(), imageView.getHeight());
@@ -172,15 +180,18 @@ public class ImageAdapter extends BaseAdapter {
                                 }
                             });
                         }
-                    } catch (IllegalArgumentException | IOException e) {
+                    } catch (IllegalArgumentException | IOException | IndexOutOfBoundsException e) {
                         e.printStackTrace();
                     } finally {
                         loadingLock.unlock();
                     }
                 }
-                // generate thumbnail and save to cache
             }
         }).start();
+    }
+
+    public void clearThumbnailList() {
+        mThumbnailList.clear();
     }
 
     private class ViewHolder {
