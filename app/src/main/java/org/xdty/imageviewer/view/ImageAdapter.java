@@ -20,6 +20,7 @@ import org.xdty.imageviewer.utils.Utils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,9 +37,12 @@ public class ImageAdapter extends BaseAdapter {
     public final static String TAG = "ImageAdapter";
 
     private final ReentrantLock thumbnailLock = new ReentrantLock(true);
+    private final ReentrantLock loadingLock = new ReentrantLock(true);
 
     private Context mContext;
     private ArrayList<SmbFile> mImageList;
+
+    private ArrayList<String> mThumbnailList = new ArrayList<>();
 
     private File mCacheDir;
 
@@ -86,6 +90,8 @@ public class ImageAdapter extends BaseAdapter {
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
+            String name = (String) viewHolder.thumbnail.getTag();
+            mThumbnailList.remove(name);
         }
 
         SmbFile file = mImageList.get(position);
@@ -95,6 +101,7 @@ public class ImageAdapter extends BaseAdapter {
             } else {
                 viewHolder.thumbnail.setImageResource(R.mipmap.picture);
 
+                mThumbnailList.add(file.getName());
                 updateThumbnail(viewHolder.thumbnail, position);
             }
             if (file.canRead() && file.canWrite()) {
@@ -114,14 +121,20 @@ public class ImageAdapter extends BaseAdapter {
         new Thread(new Runnable() {
             @Override
             public void run() {
-
-                thumbnailLock.lock();
                 // get file's md5 and check if thumbnail exist
                 String md5 = Utils.md5(mImageList.get(position));
                 File f = new File(mCacheDir, md5);
-                try {
-                    if (f.exists()) {
-                        final Bitmap bitmap = BitmapFactory.decodeStream(new FileInputStream(f));
+
+                if (f.exists()) {
+                    thumbnailLock.lock();
+
+                    if (!mThumbnailList.contains(mImageList.get(position).getName())) {
+                        thumbnailLock.unlock();
+                        return;
+                    }
+                    try {
+                        final Bitmap bitmap;
+                        bitmap = BitmapFactory.decodeStream(new FileInputStream(f));
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -130,8 +143,18 @@ public class ImageAdapter extends BaseAdapter {
                                 }
                             }
                         });
-
-                    } else {
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } finally {
+                        thumbnailLock.unlock();
+                    }
+                } else {
+                    loadingLock.lock();
+                    if (!mThumbnailList.contains(mImageList.get(position).getName())) {
+                        loadingLock.unlock();
+                        return;
+                    }
+                    try {
                         Bitmap tmpBitmap = BitmapFactory.decodeStream(mImageList.get(position).getInputStream());
                         final Bitmap bitmap = ThumbnailUtils.extractThumbnail(tmpBitmap, imageView.getWidth(), imageView.getHeight());
                         tmpBitmap.recycle();
@@ -149,11 +172,11 @@ public class ImageAdapter extends BaseAdapter {
                                 }
                             });
                         }
+                    } catch (IllegalArgumentException | IOException e) {
+                        e.printStackTrace();
+                    } finally {
+                        loadingLock.unlock();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    thumbnailLock.unlock();
                 }
                 // generate thumbnail and save to cache
             }
