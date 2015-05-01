@@ -62,7 +62,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private HashMap<Integer, Boolean> orientationMap = new HashMap<>();
     private Handler handler = new Handler();
 
-    private int mGridClickPosition = -1;
+    private int mGridPosition = -1;
+
+    private GridView gridView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +72,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_main);
 
-        GridView gridView = (GridView) findViewById(R.id.gridView);
+        gridView = (GridView) findViewById(R.id.gridView);
         imageAdapter = new ImageAdapter(this, mImageList);
         gridView.setAdapter(imageAdapter);
 
@@ -160,7 +162,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     } else {
                         // fixme: may have mem leak here.
 
-                        mGridClickPosition = position;
+                        mGridPosition = position;
 
                         mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
                         mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
@@ -221,6 +223,11 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             }
             showSystemUI();
+
+            // scroll grid to current image
+            gridView.smoothScrollToPosition(mGridPosition);
+            gridView.setSelection(mGridPosition);
+
         } else if (mPathStack.size() > 0) {
             mCurrentPath = mPathStack.pop();
             updateFileGrid();
@@ -313,7 +320,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             @Override
             public void run() {
 
-                if (mViewPager != null && position != mGridClickPosition) {
+                if (mViewPager != null && position != mGridPosition) {
                     try {
                         Thread.sleep(20);
                     } catch (InterruptedException e) {
@@ -369,8 +376,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                                 }
                             }
 
-                            if (mGridClickPosition == position) {
-                                mGridClickPosition = -1;
+                            if (mGridPosition == position) {
+                                mGridPosition = -1;
                             }
                         }
                     });
@@ -401,6 +408,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     @Override
     public void onPageSelected(int position) {
         Log.d(TAG, "onPageSelected:" + position);
+        mGridPosition = position;
     }
 
     @Override
@@ -446,7 +454,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (mViewPager!=null && mViewPager.getVisibility()==View.VISIBLE) {
+                if (mViewPager != null && mViewPager.getVisibility() == View.VISIBLE) {
                     hideSystemUI();
                 }
             }
