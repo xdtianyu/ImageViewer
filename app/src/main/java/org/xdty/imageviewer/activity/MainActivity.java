@@ -446,7 +446,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                hideSystemUI();
+                if (mViewPager!=null && mViewPager.getVisibility()==View.VISIBLE) {
+                    hideSystemUI();
+                }
             }
         }, 3000);
     }
