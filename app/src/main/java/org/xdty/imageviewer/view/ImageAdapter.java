@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.locks.ReentrantLock;
 
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
@@ -33,6 +34,8 @@ import jcifs.smb.SmbFile;
 public class ImageAdapter extends BaseAdapter {
 
     public final static String TAG = "ImageAdapter";
+
+    private final ReentrantLock thumbnailLock = new ReentrantLock(true);
 
     private Context mContext;
     private ArrayList<SmbFile> mImageList;
@@ -85,24 +88,22 @@ public class ImageAdapter extends BaseAdapter {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        if (viewHolder.thumbnail.getTag() != mImageList.get(position).getPath()) {
-            SmbFile file = mImageList.get(position);
-            try {
-                if (file.isDirectory()) {
-                    viewHolder.thumbnail.setImageResource(R.mipmap.folder);
-                } else {
-                    viewHolder.thumbnail.setImageResource(R.mipmap.picture);
+        SmbFile file = mImageList.get(position);
+        try {
+            if (file.isDirectory()) {
+                viewHolder.thumbnail.setImageResource(R.mipmap.folder);
+            } else {
+                viewHolder.thumbnail.setImageResource(R.mipmap.picture);
 
-                    updateThumbnail(viewHolder.thumbnail, position);
-                }
-                if (file.canRead() && file.canWrite()) {
-                    viewHolder.lock.setVisibility(View.GONE);
-                }
-                viewHolder.title.setText(file.getName());
-                viewHolder.thumbnail.setTag(file.getName());
-            } catch (SmbException e) {
-                e.printStackTrace();
+                updateThumbnail(viewHolder.thumbnail, position);
             }
+            if (file.canRead() && file.canWrite()) {
+                viewHolder.lock.setVisibility(View.GONE);
+            }
+            viewHolder.title.setText(file.getName());
+            viewHolder.thumbnail.setTag(file.getName());
+        } catch (SmbException e) {
+            e.printStackTrace();
         }
         return convertView;
     }
@@ -114,6 +115,7 @@ public class ImageAdapter extends BaseAdapter {
             @Override
             public void run() {
 
+                thumbnailLock.lock();
                 // get file's md5 and check if thumbnail exist
                 String md5 = Utils.md5(mImageList.get(position));
                 File f = new File(mCacheDir, md5);
@@ -123,13 +125,16 @@ public class ImageAdapter extends BaseAdapter {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                imageView.setImageBitmap(bitmap);
+                                if (mImageList.get(position).getName().equals(imageView.getTag())) {
+                                    imageView.setImageBitmap(bitmap);
+                                }
                             }
                         });
 
                     } else {
                         Bitmap tmpBitmap = BitmapFactory.decodeStream(mImageList.get(position).getInputStream());
                         final Bitmap bitmap = ThumbnailUtils.extractThumbnail(tmpBitmap, imageView.getWidth(), imageView.getHeight());
+                        tmpBitmap.recycle();
                         if (f.createNewFile()) {
                             FileOutputStream out = new FileOutputStream(f);
                             bitmap.compress(CompressFormat.JPEG, 90, out);
@@ -138,13 +143,17 @@ public class ImageAdapter extends BaseAdapter {
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    imageView.setImageBitmap(bitmap);
+                                    if (mImageList.get(position).getName().equals(imageView.getTag())) {
+                                        imageView.setImageBitmap(bitmap);
+                                    }
                                 }
                             });
                         }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    thumbnailLock.unlock();
                 }
                 // generate thumbnail and save to cache
             }
