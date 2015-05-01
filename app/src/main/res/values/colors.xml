@@ -2,5 +2,7 @@
 <resources>
 
     <color name="holo_blue">#FF33E5B5</color>
+    <color name="item_background">#FF303030</color>
+    <color name="text_background">#80000000</color>
 
 </resources>

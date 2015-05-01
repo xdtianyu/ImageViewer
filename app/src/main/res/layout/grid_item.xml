@@ -1,29 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<org.xdty.imageviewer.view.SquareLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:id="@+id/dir_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/item_background">
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/image"
-            android:scaleType="centerInside"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/thumbnail"
+            android:scaleType="fitCenter"
             android:contentDescription="@string/image_item_description"/>
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/lock"
             android:contentDescription="@string/action_settings"
-            android:layout_gravity="end"
+            android:layout_gravity="bottom|end"
             android:visibility="visible"
+            android:padding="@dimen/lock_padding"
             android:src="@mipmap/lock_small"/>
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@color/text_background">
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/title"
+                android:singleLine="true"
+                android:padding="@dimen/grid_text_padding" />
+        </RelativeLayout>
     </FrameLayout>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/title"/>
-</LinearLayout>
+</org.xdty.imageviewer.view.SquareLinearLayout>

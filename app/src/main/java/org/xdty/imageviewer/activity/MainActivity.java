@@ -50,6 +50,7 @@ import static org.xdty.imageviewer.utils.Utils.RotateBitmap;
 public class MainActivity extends Activity implements ViewPager.OnPageChangeListener {
 
     public final static String TAG = "MainActivity";
+
     private final ReentrantLock sambaLock = new ReentrantLock(true);
     private ArrayList<SmbFile> mImageList = new ArrayList<>();
     private ImageAdapter imageAdapter;
@@ -61,10 +62,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private HashMap<Integer, Integer> rotationMap = new HashMap<>();
     private HashMap<Integer, Boolean> orientationMap = new HashMap<>();
     private Handler handler = new Handler();
-
-    private int mGridPosition = -1;
-
     private GridView gridView;
+    private int mGridPosition = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,8 +159,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         mCurrentPath = mImageList.get(position).getPath();
                         updateFileGrid();
                     } else {
-                        // fixme: may have mem leak here.
-
                         mGridPosition = position;
 
                         mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
@@ -182,13 +179,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                         }
 
-                        //getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                        //getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-                        //getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
                         hideSystemUI();
 
-                        //setContentView(R.layout.activity_main);
                     }
                 } catch (SmbException e) {
                     e.printStackTrace();
@@ -214,6 +206,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     @Override
     public void onBackPressed() {
         //Log.d(TAG, "onBackPressed");
+
+        // TODO: restore position of parent grid
+
         if (mViewPager != null && mViewPager.getVisibility() == View.VISIBLE) {
             mViewPager.setVisibility(View.GONE);
             mViewPager.removeAllViews();
@@ -227,7 +222,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             // scroll grid to current image
             gridView.smoothScrollToPosition(mGridPosition);
             gridView.setSelection(mGridPosition);
-
         } else if (mPathStack.size() > 0) {
             mCurrentPath = mPathStack.pop();
             updateFileGrid();
@@ -256,19 +250,14 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }

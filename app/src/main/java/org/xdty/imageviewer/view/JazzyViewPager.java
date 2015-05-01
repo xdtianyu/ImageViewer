@@ -77,21 +77,23 @@ public class JazzyViewPager extends ViewPager {
 	@SuppressWarnings("incomplete-switch")
 	public JazzyViewPager(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		setClipChildren(false);
-		// now style everything!
-		TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.JazzyViewPager);
-		int effect = ta.getInt(R.styleable.JazzyViewPager_style, 0);
-		String[] transitions = getResources().getStringArray(R.array.jazzy_effects);
-		setTransitionEffect(TransitionEffect.valueOf(transitions[effect]));
-		setFadeEnabled(ta.getBoolean(R.styleable.JazzyViewPager_fadeEnabled, false));
-		setOutlineEnabled(ta.getBoolean(R.styleable.JazzyViewPager_outlineEnabled, false));
-		setOutlineColor(ta.getColor(R.styleable.JazzyViewPager_outlineColor, Color.WHITE));
-		switch (mEffect) {
-		case Stack:
-		case ZoomOut:
-			setFadeEnabled(true);
+		if(!isInEditMode()) {
+			setClipChildren(false);
+			// now style everything!
+			TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.JazzyViewPager);
+			int effect = ta.getInt(R.styleable.JazzyViewPager_style, 0);
+			String[] transitions = getResources().getStringArray(R.array.jazzy_effects);
+			setTransitionEffect(TransitionEffect.valueOf(transitions[effect]));
+			setFadeEnabled(ta.getBoolean(R.styleable.JazzyViewPager_fadeEnabled, false));
+			setOutlineEnabled(ta.getBoolean(R.styleable.JazzyViewPager_outlineEnabled, false));
+			setOutlineColor(ta.getColor(R.styleable.JazzyViewPager_outlineColor, Color.WHITE));
+			switch (mEffect) {
+				case Stack:
+				case ZoomOut:
+					setFadeEnabled(true);
+			}
+			ta.recycle();
 		}
-		ta.recycle();
 	}
 
 	public void setTransitionEffect(TransitionEffect effect) {

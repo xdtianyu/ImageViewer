@@ -11,4 +11,6 @@ public class Config {
     public final static String server = "smb://192.168.2.110/";
 
     public static RotateType rotateType  = RotateType.ROTATE_SCREEN_FIT_IMAGE;
+
+    public final static String thumbnailDir = "thumbnails";
 }
