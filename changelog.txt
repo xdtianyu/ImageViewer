@@ -1,3 +1,7 @@
+version 1.2.0 (2015-05-02)
+
+1. Add local image support
+
 version 1.1.0 (2015-05-02)
 
 1. Add JazzyViewPager
