@@ -143,7 +143,7 @@ public class ImageAdapter extends BaseAdapter {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                if (mImageList.get(position).getName().equals(imageView.getTag())) {
+                                if (mImageList.size() > position && mImageList.get(position).getName().equals(imageView.getTag())) {
                                     imageView.setImageBitmap(bitmap);
                                 }
                             }
@@ -174,7 +174,7 @@ public class ImageAdapter extends BaseAdapter {
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if (mImageList.size()>position && mImageList.get(position).getName().equals(imageView.getTag())) {
+                                    if (mImageList.size() > position && mImageList.get(position).getName().equals(imageView.getTag())) {
                                         imageView.setImageBitmap(bitmap);
                                     }
                                 }
