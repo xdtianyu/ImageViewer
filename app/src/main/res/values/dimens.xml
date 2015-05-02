@@ -4,6 +4,8 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="lock_padding">20dp</dimen>
     <dimen name="grid_padding">0dp</dimen>
+    <dimen name="grid_padding_top">50dp</dimen>
+    <dimen name="grid_padding_bottom">50dp</dimen>
     <dimen name="grid_item_padding">2dp</dimen>
     <dimen name="grid_text_padding">4dp</dimen>
 </resources>

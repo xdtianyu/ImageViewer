@@ -12,10 +12,11 @@
             android:layout_height="match_parent"
             android:paddingLeft="@dimen/grid_padding"
             android:paddingRight="@dimen/grid_padding"
-            android:paddingTop="@dimen/grid_padding"
-            android:paddingBottom="@dimen/grid_padding"
+            android:paddingTop="@dimen/grid_padding_top"
+            android:paddingBottom="@dimen/grid_padding_bottom"
             android:verticalSpacing="@dimen/grid_item_padding"
             android:horizontalSpacing="@dimen/grid_item_padding"
+            android:clipToPadding="false"
             android:id="@+id/gridView"
             android:numColumns="auto_fit"/>
         <LinearLayout
