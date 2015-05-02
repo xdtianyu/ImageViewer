@@ -62,7 +62,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private ArrayList<SmbFile> mImageList = new ArrayList<>();
     private GridAdapter gridAdapter;
     private ArrayDeque<PathInfo> mPathStack = new ArrayDeque<>();
-    private String mCurrentPath;
+    private String mCurrentPath = "";
     private JazzyViewPager mViewPager;
     private android.view.GestureDetector mClickDetector;
     private RotateGestureDetector mRotationDetector;
@@ -71,6 +71,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private Handler handler = new Handler();
     private GridView gridView;
     private int mGridPosition = -1;
+    private RotateType rotateType = RotateType.ORIGINAL;
     private SambaInfo sambaInfo = new SambaInfo();
 
     @Override
@@ -78,14 +79,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_main);
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        sambaInfo.server = sharedPreferences.getString(Config.SAMBA_SERVER, "");
-        sambaInfo.folder = sharedPreferences.getString(Config.SAMBA_FOLDER, "");
-        sambaInfo.username = sharedPreferences.getString(Config.SAMBA_USERNAME, "");
-        sambaInfo.password = sharedPreferences.getString(Config.SAMBA_PASSWORD, "");
-
-        mCurrentPath = sambaInfo.build();
 
         emptyText = (TextView) findViewById(R.id.empty_dir);
         gridView = (GridView) findViewById(R.id.gridView);
@@ -193,8 +186,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         Log.d(TAG, "setCurrentItem:" + position);
                         mViewPager.setVisibility(View.VISIBLE);
 
-                        // TODO: read config here
-                        if (Config.rotateType == RotateType.ROTATE_IMAGE_FIT_SCREEN) {
+                        if (rotateType == RotateType.ROTATE_IMAGE_FIT_SCREEN) {
                             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                         }
 
@@ -217,13 +209,33 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 return true;
             }
         });
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart");
+
+        // reload config
+        String serverPath = sambaInfo.build();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sambaInfo.server = sharedPreferences.getString(Config.SAMBA_SERVER, "");
+        sambaInfo.folder = sharedPreferences.getString(Config.SAMBA_FOLDER, "");
+        sambaInfo.username = sharedPreferences.getString(Config.SAMBA_USERNAME, "");
+        sambaInfo.password = sharedPreferences.getString(Config.SAMBA_PASSWORD, "");
+
+        if (!serverPath.equals(sambaInfo.build())) {
+            mCurrentPath = sambaInfo.build();
+        }
+
+        rotateType = RotateType.build(sharedPreferences.getString(Config.ROTATE_TYPE, "2"));
         updateFileGrid();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume");
     }
 
     @Override
@@ -369,8 +381,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     final Bitmap tmpBitmap = BitmapFactory.decodeStream(inputStream);
                     final Bitmap bitmap;
 
-                    // TODO: read settings here
-                    switch (Config.rotateType) {
+                    switch (rotateType) {
                         case ROTATE_SCREEN_FIT_IMAGE:
                             // rotate screen to fit image
                             if (tmpBitmap.getHeight() > tmpBitmap.getWidth()) {
@@ -401,7 +412,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                             Log.d(TAG, "set image bitmap: " + position);
                             int orientation = getRequestedOrientation();
 
-                            if (mViewPager != null && position == mViewPager.getCurrentItem() && Config.rotateType == RotateType.ROTATE_SCREEN_FIT_IMAGE) {
+                            if (mViewPager != null && position == mViewPager.getCurrentItem() && rotateType == RotateType.ROTATE_SCREEN_FIT_IMAGE) {
                                 if (orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
                                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                                 } else if (!orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {

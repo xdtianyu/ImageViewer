@@ -95,8 +95,8 @@ public class GridAdapter extends BaseAdapter {
             mThumbnailList.remove(name);
         }
 
-        SmbFile file = mImageList.get(position);
         try {
+            SmbFile file = mImageList.get(position);
             viewHolder.title.setText(file.getName());
             viewHolder.thumbnail.setTag(file.getName());
             if (file.isDirectory()) {
@@ -110,7 +110,7 @@ public class GridAdapter extends BaseAdapter {
             if (file.canRead() && file.canWrite()) {
                 viewHolder.lock.setVisibility(View.GONE);
             }
-        } catch (SmbException e) {
+        } catch (SmbException | IndexOutOfBoundsException e) {
             e.printStackTrace();
         }
         return convertView;

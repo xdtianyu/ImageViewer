@@ -7,7 +7,7 @@
     <string name="settings_about">About</string>
 
     <string name="developer">Developer</string>
-    <string name="developer_summary" translatable="false">ty &lt;xdtianyu@gmail.com&gt;</string>
+    <string name="developer_summary" translatable="false">tianyu &lt;xdtianyu@gmail.com&gt;</string>
     
     <string name="license">Open source license </string>
 
@@ -24,6 +24,21 @@
     <string name="windows_share_password">Password</string>
     <string name="windows_share_folder">Shared folder</string>
     <string name="windows_share_summary">Connect windows share or samba server </string>
+
+    <string name="image_rotate_type">Image display</string>
+    <string name="image_original">Original</string>
+    <string name="image_fit_screen">Rotate image to fit screen</string>
+    <string name="screen_fit_image">Rotate screen to fit image</string>
+    <string-array name="image_rotate_entries">
+        <item>@string/image_original</item>
+        <item>@string/image_fit_screen</item>
+        <item>@string/screen_fit_image</item>
+    </string-array>
+    <string-array name="image_rotate_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
 
     <string-array name="jazzy_effects">
         <item>Standard</item>

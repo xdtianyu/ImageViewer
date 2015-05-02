@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-        <Preference
-            android:key="general"
-            android:title="aaa"
-            android:summary=""/>
+    <ListPreference
+        android:title="@string/image_rotate_type"
+        android:key="rotate_type"
+        android:entries="@array/image_rotate_entries"
+        android:entryValues="@array/image_rotate_values"
+        android:defaultValue="2"/>
 </PreferenceScreen>

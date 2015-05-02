@@ -17,4 +17,8 @@
     <string name="windows_share_server">服务器地址</string>
     <string name="windows_share_username">用户名</string>
     <string name="windows_share_folder">共享目录</string>
+    <string name="image_rotate_type">图片显示</string>
+    <string name="image_original">原始方向保持不变</string>
+    <string name="image_fit_screen">旋转图片以适应屏幕</string>
+    <string name="screen_fit_image">旋转屏幕以适应图片</string>
 </resources>
