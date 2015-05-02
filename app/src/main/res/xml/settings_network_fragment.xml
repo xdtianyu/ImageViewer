@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceScreen
+        android:key="windows_share"
+        android:summary="@string/windows_share_summary"
+        android:title="@string/windows_share">
+        <EditTextPreference
+            android:key="samba_server"
+            android:title="@string/windows_share_server"
+            android:summary=""/>
+        <EditTextPreference
+            android:key="samba_folder"
+            android:title="@string/windows_share_folder"
+            android:summary=""/>
+        <EditTextPreference
+            android:key="samba_username"
+            android:title="@string/windows_share_username"/>
+        <EditTextPreference
+            android:key="samba_password"
+            android:title="@string/windows_share_password"/>
+    </PreferenceScreen>
+</PreferenceScreen>

@@ -2,6 +2,7 @@ package org.xdty.imageviewer.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -9,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -28,6 +30,7 @@ import com.almeros.android.multitouch.RotateGestureDetector;
 import org.xdty.imageviewer.R;
 import org.xdty.imageviewer.model.Config;
 import org.xdty.imageviewer.model.RotateType;
+import org.xdty.imageviewer.model.SambaInfo;
 import org.xdty.imageviewer.utils.SmbFileHelper;
 import org.xdty.imageviewer.utils.Utils;
 import org.xdty.imageviewer.view.GridAdapter;
@@ -59,7 +62,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private ArrayList<SmbFile> mImageList = new ArrayList<>();
     private GridAdapter gridAdapter;
     private ArrayDeque<PathInfo> mPathStack = new ArrayDeque<>();
-    private String mCurrentPath = Config.server + Config.sharedFolder;
+    private String mCurrentPath;
     private JazzyViewPager mViewPager;
     private android.view.GestureDetector mClickDetector;
     private RotateGestureDetector mRotationDetector;
@@ -68,12 +71,21 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private Handler handler = new Handler();
     private GridView gridView;
     private int mGridPosition = -1;
+    private SambaInfo sambaInfo = new SambaInfo();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_main);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        sambaInfo.server = sharedPreferences.getString(Config.SAMBA_SERVER, "");
+        sambaInfo.folder = sharedPreferences.getString(Config.SAMBA_FOLDER, "");
+        sambaInfo.username = sharedPreferences.getString(Config.SAMBA_USERNAME, "");
+        sambaInfo.password = sharedPreferences.getString(Config.SAMBA_PASSWORD, "");
+
+        mCurrentPath = sambaInfo.build();
 
         emptyText = (TextView) findViewById(R.id.empty_dir);
         gridView = (GridView) findViewById(R.id.gridView);
@@ -302,7 +314,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         new Thread(new Runnable() {
             @Override
             public void run() {
-                NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication("", Config.user, Config.password);
+                NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication("", sambaInfo.username, sambaInfo.password);
                 try {
                     SmbFile file = new SmbFile(path, auth);
                     SmbFile[] lists = file.listFiles();
@@ -318,7 +330,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         }
                     }
                     notifyListChanged();
-
+                } catch (MalformedURLException | SmbException e) {
+                    e.printStackTrace();
+                } finally {
                     if (mImageList.size() == 0) {
                         handler.post(new Runnable() {
                             @Override
@@ -327,11 +341,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                             }
                         });
                     }
-
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (SmbException e) {
-                    e.printStackTrace();
                 }
             }
         }).start();

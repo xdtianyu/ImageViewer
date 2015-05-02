@@ -59,4 +59,12 @@ public class Utils {
     public static String md5(SmbFile smbFile) {
         return md5(smbFile.getPath() + smbFile.getLastModified() + smbFile.getContentLength());
     }
+
+    public static String fillString(int count,char c) {
+        StringBuilder sb = new StringBuilder( count );
+        for( int i=0; i<count; i++ ) {
+            sb.append( c );
+        }
+        return sb.toString();
+    }
 }

@@ -8,4 +8,13 @@
     <string name="developer">开发者</string>
     <string name="license">开放源代码许可</string>
     <string name="empty_dir">没有找到图片!</string>
+    <string name="check_description">选中</string>
+    <string name="lock_description">锁</string>
+    <string name="windows_share">Windows共享</string>
+    <string name="windows_share_summary">连接Windows共享或samba服务器</string>
+    <string name="network_share">网络位置</string>
+    <string name="windows_share_password">密码</string>
+    <string name="windows_share_server">服务器地址</string>
+    <string name="windows_share_username">用户名</string>
+    <string name="windows_share_folder">共享目录</string>
 </resources>

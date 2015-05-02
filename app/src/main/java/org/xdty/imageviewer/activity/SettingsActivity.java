@@ -4,8 +4,9 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
 import org.xdty.imageviewer.R;
-import org.xdty.imageviewer.fragment.SettingsAboutFragment;
-import org.xdty.imageviewer.fragment.SettingsGeneralFragment;
+import org.xdty.imageviewer.fragment.settings.AboutFragment;
+import org.xdty.imageviewer.fragment.settings.GeneralFragment;
+import org.xdty.imageviewer.fragment.settings.NetworkShareFragment;
 
 import java.util.List;
 
@@ -21,8 +22,9 @@ public class SettingsActivity extends PreferenceActivity {
 
     @Override
     protected boolean isValidFragment(String fragmentName) {
-        return SettingsGeneralFragment.class.getName().equals(fragmentName)||
-                SettingsAboutFragment.class.getName().equals(fragmentName);
+        return GeneralFragment.class.getName().equals(fragmentName)||
+                AboutFragment.class.getName().equals(fragmentName)||
+                NetworkShareFragment.class.getName().equals(fragmentName);
     }
 
     @Override

@@ -17,6 +17,14 @@
     <string name="lock_description">lock</string>
     <string name="check_description">check</string>
 
+    <string name="network_share">Network share</string>
+    <string name="windows_share">Windows share</string>
+    <string name="windows_share_server">Server address</string>
+    <string name="windows_share_username">Username</string>
+    <string name="windows_share_password">Password</string>
+    <string name="windows_share_folder">Shared folder</string>
+    <string name="windows_share_summary">Connect windows share or samba server </string>
+
     <string-array name="jazzy_effects">
         <item>Standard</item>
         <item>Tablet</item>
