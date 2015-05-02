@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme" parent="android:Theme.Material.Light">
+    <style name="AppTheme" parent="@android:style/Theme.Material.NoActionBar.TranslucentDecor">
+        <item name="android:windowActionBar">true</item>
+        <item name="android:windowNoTitle">false</item>
+        <item name="android:actionBarStyle">@style/action_bar_theme</item>
+        <!--<item name="android:actionMenuTextColor">#fff</item>-->
+    </style>
+    <style name="action_bar_theme" parent="@android:style/Widget.Material.ActionBar.Solid">
+        <item name="android:background">#60000000</item>
     </style>
 </resources>
