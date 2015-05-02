@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">图片浏览器</string>
+    <string name="action_settings">设置</string>
+    <string name="settings">设置</string>
+    <string name="settings_about">关于</string>
+    <string name="settings_general">常规</string>
+    <string name="developer">开发者</string>
+    <string name="license">开放源代码许可</string>
+</resources>

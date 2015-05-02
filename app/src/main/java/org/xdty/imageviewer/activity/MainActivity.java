@@ -1,6 +1,7 @@
 package org.xdty.imageviewer.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -259,6 +260,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
 

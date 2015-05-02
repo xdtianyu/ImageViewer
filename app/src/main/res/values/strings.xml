@@ -1,11 +1,17 @@
 <resources>
     <string name="app_name">ImageViewer</string>
 
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="settings">Settings</string>
+    <string name="settings_general">General</string>
+    <string name="settings_about">About</string>
 
-    <string name="image_item_description">Image item</string>
-    <string name="title_activity_image_viewer">ImageViewerActivity</string>
+    <string name="developer">Developer</string>
+    <string name="developer_summary" translatable="false">ty &lt;xdtianyu@gmail.com&gt;</string>
+    
+    <string name="license">Open source license </string>
+
+    <string name="image_item_description" translatable="false">Image item</string>
 
     <string-array name="jazzy_effects">
         <item>Standard</item>
