@@ -1,3 +1,14 @@
+version 1.1.0 (2015-05-02)
+
+1. Add JazzyViewPager
+2. Add Immersive mode
+3. Add rotate gesture
+4. Add screen rotate to fit image
+5. Add thumbnail
+6. Add action bar
+7. Add settings
+8. Add app icon
+
 version 1.0.0 (2015-04-28)
 
-1. add browser, image viewer
+1. Add browser, image viewer
