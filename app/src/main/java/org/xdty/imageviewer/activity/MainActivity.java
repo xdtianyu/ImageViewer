@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.view.PagerAdapter;
@@ -29,6 +30,7 @@ import com.almeros.android.multitouch.RotateGestureDetector;
 
 import org.xdty.imageviewer.R;
 import org.xdty.imageviewer.model.Config;
+import org.xdty.imageviewer.model.ImageFile;
 import org.xdty.imageviewer.model.RotateType;
 import org.xdty.imageviewer.model.SambaInfo;
 import org.xdty.imageviewer.utils.SmbFileHelper;
@@ -36,6 +38,7 @@ import org.xdty.imageviewer.utils.Utils;
 import org.xdty.imageviewer.view.GridAdapter;
 import org.xdty.imageviewer.view.JazzyViewPager;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -59,7 +62,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     private final ReentrantLock sambaLock = new ReentrantLock(true);
     private TextView emptyText;
-    private ArrayList<SmbFile> mImageList = new ArrayList<>();
+    private ArrayList<ImageFile> mImageFileList = new ArrayList<>();
     private GridAdapter gridAdapter;
     private ArrayDeque<PathInfo> mPathStack = new ArrayDeque<>();
     private String mCurrentPath = "";
@@ -73,6 +76,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private int mGridPosition = -1;
     private RotateType rotateType = RotateType.ORIGINAL;
     private SambaInfo sambaInfo = new SambaInfo();
+    private NtlmPasswordAuthentication smbAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +86,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         emptyText = (TextView) findViewById(R.id.empty_dir);
         gridView = (GridView) findViewById(R.id.gridView);
-        gridAdapter = new GridAdapter(this, mImageList);
+        gridAdapter = new GridAdapter(this, mImageFileList);
         gridView.setAdapter(gridAdapter);
 
         // handle only single tap event, show or hide systemUI
@@ -163,40 +167,35 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                try {
-                    if (mImageList.get(position).isDirectory()) {
-                        mPathStack.push(new PathInfo(mCurrentPath, position));
-                        mCurrentPath = mImageList.get(position).getPath();
-                        updateFileGrid();
-                        gridView.smoothScrollToPosition(0);
-                        gridView.setSelection(0);
-                    } else {
-                        mGridPosition = position;
+                if (mImageFileList.get(position).isDirectory()) {
+                    mPathStack.push(new PathInfo(mCurrentPath, position));
+                    mCurrentPath = mImageFileList.get(position).getPath();
+                    updateFileGrid();
+                    gridView.smoothScrollToPosition(0);
+                    gridView.setSelection(0);
+                } else {
+                    mGridPosition = position;
 
-                        mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
-                        mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
-                        mViewPager.setOnPageChangeListener(MainActivity.this);
-                        mViewPager.setOffscreenPageLimit(2);
+                    mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
+                    mViewPager.setAdapter(new ViewPagerAdapter(mImageFileList));
+                    mViewPager.setOnPageChangeListener(MainActivity.this);
+                    mViewPager.setOffscreenPageLimit(2);
 
-                        mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Standard);
-                        //mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Accordion);
-                        mViewPager.getAdapter().notifyDataSetChanged();
+                    mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Standard);
+                    //mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Accordion);
+                    mViewPager.getAdapter().notifyDataSetChanged();
 
-                        mViewPager.setCurrentItem(position, false);
-                        Log.d(TAG, "setCurrentItem:" + position);
-                        mViewPager.setVisibility(View.VISIBLE);
+                    mViewPager.setCurrentItem(position, false);
+                    Log.d(TAG, "setCurrentItem:" + position);
+                    mViewPager.setVisibility(View.VISIBLE);
 
-                        if (rotateType == RotateType.ROTATE_IMAGE_FIT_SCREEN) {
-                            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                        }
-
-                        hideSystemUI();
-
+                    if (rotateType == RotateType.ROTATE_IMAGE_FIT_SCREEN) {
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                     }
-                } catch (SmbException e) {
-                    e.printStackTrace();
-                }
 
+                    hideSystemUI();
+
+                }
             }
         });
 
@@ -224,11 +223,12 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         sambaInfo.username = sharedPreferences.getString(Config.SAMBA_USERNAME, "");
         sambaInfo.password = sharedPreferences.getString(Config.SAMBA_PASSWORD, "");
 
-        if (!serverPath.equals(sambaInfo.build())) {
-            mCurrentPath = sambaInfo.build();
-        }
-
+        smbAuth = new NtlmPasswordAuthentication("", sambaInfo.username, sambaInfo.password);
         rotateType = RotateType.build(sharedPreferences.getString(Config.ROTATE_TYPE, "2"));
+
+        if (!serverPath.equals(sambaInfo.build())) {
+            mCurrentPath = Config.ROOT_PATH;
+        }
         updateFileGrid();
     }
 
@@ -263,6 +263,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             PathInfo pathInfo = mPathStack.pop();
             mCurrentPath = pathInfo.path;
             mGridPosition = pathInfo.position;
+
             updateFileGrid();
 
             if (emptyText.getVisibility() == View.VISIBLE) {
@@ -315,20 +316,101 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     }
 
     private void updateFileGrid() {
-        loadSambaDir(mCurrentPath);
+        if (mCurrentPath.equals(Config.ROOT_PATH)) {
+            loadRootDir();
+        } else if (mCurrentPath.startsWith(Config.SAMBA_PREFIX)) {
+            loadSambaDir(mCurrentPath);
+        } else {
+            loadLocalDir(mCurrentPath);
+        }
+    }
+
+    private void loadRootDir() {
+
+        mImageFileList.clear();
+        rotationMap.clear();
+        orientationMap.clear();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    SmbFile f = new SmbFile(sambaInfo.build(), smbAuth);
+                    if (f.canRead()) {
+                        if (f.isDirectory() || f.isFile() && Utils.isImage(f.getName())) {
+                            mImageFileList.add(new ImageFile(f));
+                        }
+                    }
+                } catch (MalformedURLException | SmbException e) {
+                    e.printStackTrace();
+                }
+
+                String localRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
+
+                File root = new File(localRoot);
+                if (root.isDirectory() || root.isFile()) {
+                    mImageFileList.add(new ImageFile(root));
+                }
+
+                notifyListChanged();
+
+                if (mImageFileList.size() == 0) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            emptyText.setVisibility(View.VISIBLE);
+                        }
+                    });
+                }
+            }
+        }).start();
+    }
+
+    private void loadLocalDir(final String path) {
+        mImageFileList.clear();
+        rotationMap.clear();
+        orientationMap.clear();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                File root = new File(path);
+
+                if (root.exists() && root.isDirectory()) {
+                    File[] files = root.listFiles();
+                    for (File f : files) {
+                        if (f.isDirectory() || f.isFile() && Utils.isImage(f.getName())) {
+                            mImageFileList.add(new ImageFile(f));
+                        }
+                    }
+                }
+
+                notifyListChanged();
+
+                if (mImageFileList.size() == 0) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            emptyText.setVisibility(View.VISIBLE);
+                        }
+                    });
+                }
+            }
+        }).start();
+
     }
 
     private void loadSambaDir(final String path) {
 
-        mImageList.clear();
+        mImageFileList.clear();
         rotationMap.clear();
         orientationMap.clear();
         new Thread(new Runnable() {
             @Override
             public void run() {
-                NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication("", sambaInfo.username, sambaInfo.password);
+
                 try {
-                    SmbFile file = new SmbFile(path, auth);
+                    SmbFile file = new SmbFile(path, smbAuth);
                     SmbFile[] lists = file.listFiles();
 
                     // sort by filename
@@ -338,14 +420,14 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         //Log.d(TAG, s.getName());
                         // only show images and directories
                         if (s.isDirectory() || s.isFile() && Utils.isImage(s.getName())) {
-                            mImageList.add(s);
+                            mImageFileList.add(new ImageFile(s));
                         }
                     }
                     notifyListChanged();
                 } catch (MalformedURLException | SmbException e) {
                     e.printStackTrace();
                 } finally {
-                    if (mImageList.size() == 0) {
+                    if (mImageFileList.size() == 0) {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -359,7 +441,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     }
 
-    private void loadSambaImage(final SmbFile file, final ImageView imageViewer, final int position) {
+    private void loadImage(final ImageFile file, final ImageView imageViewer, final int position) {
 
         new Thread(new Runnable() {
             @Override
@@ -508,9 +590,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     private class ViewPagerAdapter extends PagerAdapter {
 
-        private ArrayList<SmbFile> fileList;
+        private ArrayList<ImageFile> fileList;
 
-        public ViewPagerAdapter(ArrayList<SmbFile> files) {
+        public ViewPagerAdapter(ArrayList<ImageFile> files) {
             fileList = files;
         }
 
@@ -541,8 +623,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             }
 
             Log.d(TAG, "getCurrentItem:" + mViewPager.getCurrentItem());
-            Log.d(TAG, "loadSambaImage: " + position);
-            loadSambaImage(fileList.get(position), photoView, position);
+            Log.d(TAG, "loadImage: " + position);
+            loadImage(fileList.get(position), photoView, position);
             container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             mViewPager.setObjectForPosition(photoView, position);
             return photoView;

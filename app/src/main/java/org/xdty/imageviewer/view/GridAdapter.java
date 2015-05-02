@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import org.xdty.imageviewer.R;
 import org.xdty.imageviewer.model.Config;
+import org.xdty.imageviewer.model.ImageFile;
 import org.xdty.imageviewer.utils.Utils;
 
 import java.io.File;
@@ -27,7 +28,6 @@ import java.util.ArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 
 import jcifs.smb.SmbException;
-import jcifs.smb.SmbFile;
 
 /**
  * Created by ty on 15-4-26.
@@ -40,7 +40,7 @@ public class GridAdapter extends BaseAdapter {
     private final ReentrantLock loadingLock = new ReentrantLock(true);
 
     private Context mContext;
-    private ArrayList<SmbFile> mImageList;
+    private ArrayList<ImageFile> mImageList;
 
     private ArrayList<String> mThumbnailList;
 
@@ -48,7 +48,7 @@ public class GridAdapter extends BaseAdapter {
 
     private Handler handler;
 
-    public GridAdapter(Context c, ArrayList<SmbFile> list) {
+    public GridAdapter(Context c, ArrayList<ImageFile> list) {
         mContext = c;
         mImageList = list;
         mCacheDir = new File(c.getCacheDir(), Config.thumbnailDir);
@@ -95,24 +95,27 @@ public class GridAdapter extends BaseAdapter {
             mThumbnailList.remove(name);
         }
 
-        try {
-            SmbFile file = mImageList.get(position);
-            viewHolder.title.setText(file.getName());
-            viewHolder.thumbnail.setTag(file.getName());
-            if (file.isDirectory()) {
-                viewHolder.thumbnail.setImageResource(R.mipmap.folder);
-            } else {
-                viewHolder.thumbnail.setImageResource(R.mipmap.picture);
+        if (mImageList.get(position)!=null) {
+            try {
+                ImageFile file = mImageList.get(position);
+                viewHolder.title.setText(file.getName());
+                viewHolder.thumbnail.setTag(file.getName());
+                if (file.isDirectory()) {
+                    viewHolder.thumbnail.setImageResource(R.mipmap.folder);
+                } else {
+                    viewHolder.thumbnail.setImageResource(R.mipmap.picture);
 
-                mThumbnailList.add(file.getName());
-                updateThumbnail(viewHolder.thumbnail, position);
+                    mThumbnailList.add(file.getName());
+                    updateThumbnail(viewHolder.thumbnail, position);
+                }
+                if (file.canRead() && file.canWrite()) {
+                    viewHolder.lock.setVisibility(View.GONE);
+                }
+            } catch (SmbException | IndexOutOfBoundsException e) {
+                e.printStackTrace();
             }
-            if (file.canRead() && file.canWrite()) {
-                viewHolder.lock.setVisibility(View.GONE);
-            }
-        } catch (SmbException | IndexOutOfBoundsException e) {
-            e.printStackTrace();
         }
+
         return convertView;
     }
 

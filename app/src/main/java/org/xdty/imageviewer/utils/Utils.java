@@ -5,10 +5,10 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.util.TypedValue;
 
+import org.xdty.imageviewer.model.ImageFile;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-import jcifs.smb.SmbFile;
 
 /**
  * Created by ty on 15-4-26.
@@ -56,8 +56,8 @@ public class Utils {
         return "";
     }
 
-    public static String md5(SmbFile smbFile) {
-        return md5(smbFile.getPath() + smbFile.getLastModified() + smbFile.getContentLength());
+    public static String md5(ImageFile imageFile) {
+        return md5(imageFile.getPath() + imageFile.getLastModified() + imageFile.getContentLength());
     }
 
     public static String fillString(int count,char c) {
