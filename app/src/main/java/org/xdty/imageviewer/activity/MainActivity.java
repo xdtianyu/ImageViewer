@@ -18,6 +18,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -29,7 +30,7 @@ import org.xdty.imageviewer.model.Config;
 import org.xdty.imageviewer.model.RotateType;
 import org.xdty.imageviewer.utils.SmbFileHelper;
 import org.xdty.imageviewer.utils.Utils;
-import org.xdty.imageviewer.view.ImageAdapter;
+import org.xdty.imageviewer.view.GridAdapter;
 import org.xdty.imageviewer.view.JazzyViewPager;
 
 import java.io.IOException;
@@ -56,7 +57,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private final ReentrantLock sambaLock = new ReentrantLock(true);
     private TextView emptyText;
     private ArrayList<SmbFile> mImageList = new ArrayList<>();
-    private ImageAdapter imageAdapter;
+    private GridAdapter gridAdapter;
     private ArrayDeque<PathInfo> mPathStack = new ArrayDeque<>();
     private String mCurrentPath = Config.server + Config.sharedFolder;
     private JazzyViewPager mViewPager;
@@ -76,8 +77,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         emptyText = (TextView) findViewById(R.id.empty_dir);
         gridView = (GridView) findViewById(R.id.gridView);
-        imageAdapter = new ImageAdapter(this, mImageList);
-        gridView.setAdapter(imageAdapter);
+        gridAdapter = new GridAdapter(this, mImageList);
+        gridView.setAdapter(gridAdapter);
 
         // handle only single tap event, show or hide systemUI
         mClickDetector = new android.view.GestureDetector(this,
@@ -192,6 +193,16 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     e.printStackTrace();
                 }
 
+            }
+        });
+
+        gridView.setOnItemLongClickListener(new OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+
+//                ImageView checkView = (ImageView)view.findViewById(R.id.check);
+//                checkView.setVisibility(View.VISIBLE);
+                return true;
             }
         });
 
@@ -404,8 +415,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                imageAdapter.clearThumbnailList();
-                imageAdapter.notifyDataSetChanged();
+                gridAdapter.clearThumbnailList();
+                gridAdapter.notifyDataSetChanged();
             }
         });
     }

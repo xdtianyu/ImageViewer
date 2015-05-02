@@ -18,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/lock"
-            android:contentDescription="@string/action_settings"
+            android:contentDescription="@string/lock_description"
             android:layout_gravity="bottom|end"
             android:visibility="visible"
             android:padding="@dimen/lock_padding"
@@ -35,5 +35,14 @@
                 android:singleLine="true"
                 android:padding="@dimen/grid_text_padding" />
         </RelativeLayout>
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/check"
+            android:src="@mipmap/check"
+            android:background="@color/check_background"
+            android:visibility="gone"
+            android:contentDescription="@string/check_description"
+            />
     </FrameLayout>
 </org.xdty.imageviewer.view.SquareLinearLayout>

@@ -32,9 +32,9 @@ import jcifs.smb.SmbFile;
 /**
  * Created by ty on 15-4-26.
  */
-public class ImageAdapter extends BaseAdapter {
+public class GridAdapter extends BaseAdapter {
 
-    public final static String TAG = "ImageAdapter";
+    public final static String TAG = "GridAdapter";
 
     private final ReentrantLock thumbnailLock = new ReentrantLock(true);
     private final ReentrantLock loadingLock = new ReentrantLock(true);
@@ -48,7 +48,7 @@ public class ImageAdapter extends BaseAdapter {
 
     private Handler handler;
 
-    public ImageAdapter(Context c, ArrayList<SmbFile> list) {
+    public GridAdapter(Context c, ArrayList<SmbFile> list) {
         mContext = c;
         mImageList = list;
         mCacheDir = new File(c.getCacheDir(), Config.thumbnailDir);
