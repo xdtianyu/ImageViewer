@@ -55,7 +55,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private final ReentrantLock sambaLock = new ReentrantLock(true);
     private ArrayList<SmbFile> mImageList = new ArrayList<>();
     private ImageAdapter imageAdapter;
-    private ArrayDeque<String> mPathStack = new ArrayDeque<>();
+    private ArrayDeque<PathInfo> mPathStack = new ArrayDeque<>();
     private String mCurrentPath = Config.server + Config.sharedFolder;
     private JazzyViewPager mViewPager;
     private android.view.GestureDetector mClickDetector;
@@ -156,7 +156,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 try {
                     if (mImageList.get(position).isDirectory()) {
-                        mPathStack.push(mCurrentPath);
+                        mPathStack.push(new PathInfo(mCurrentPath, position));
                         mCurrentPath = mImageList.get(position).getPath();
                         updateFileGrid();
                     } else {
@@ -219,16 +219,18 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             }
             showSystemUI();
-
-            // scroll grid to current image
-            gridView.smoothScrollToPosition(mGridPosition);
-            gridView.setSelection(mGridPosition);
         } else if (mPathStack.size() > 0) {
-            mCurrentPath = mPathStack.pop();
+            PathInfo pathInfo = mPathStack.pop();
+            mCurrentPath = pathInfo.path;
+            mGridPosition = pathInfo.position;
             updateFileGrid();
         } else {
             super.onBackPressed();
         }
+
+        // scroll grid to current image
+        gridView.smoothScrollToPosition(mGridPosition);
+        gridView.setSelection(mGridPosition);
     }
 
     @Override
@@ -366,10 +368,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                                 } else if (!orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
                                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                                 }
-                            }
-
-                            if (mGridPosition == position) {
-                                mGridPosition = -1;
                             }
                         }
                     });
@@ -533,6 +531,16 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 }
                 ((ViewGroup) view).removeAllViews();
             }
+        }
+    }
+
+    private class PathInfo {
+        String path;
+        int position;
+
+        public PathInfo(String path, int position) {
+            this.position = position;
+            this.path = path;
         }
     }
 
