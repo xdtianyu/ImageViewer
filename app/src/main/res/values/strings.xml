@@ -12,6 +12,7 @@
     <string name="license">Open source license </string>
 
     <string name="image_item_description" translatable="false">Image item</string>
+    <string name="empty_dir">No image found!</string>
 
     <string-array name="jazzy_effects">
         <item>Standard</item>

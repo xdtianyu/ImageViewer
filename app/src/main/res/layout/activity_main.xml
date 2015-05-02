@@ -31,5 +31,12 @@
                 >
             </org.xdty.imageviewer.view.JazzyViewPager>
         </LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/empty_dir"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:text="@string/empty_dir"/>
     </FrameLayout>
 </RelativeLayout>

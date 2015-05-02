@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.almeros.android.multitouch.RotateGestureDetector;
 
@@ -53,6 +54,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     public final static String TAG = "MainActivity";
 
     private final ReentrantLock sambaLock = new ReentrantLock(true);
+    private TextView emptyText;
     private ArrayList<SmbFile> mImageList = new ArrayList<>();
     private ImageAdapter imageAdapter;
     private ArrayDeque<PathInfo> mPathStack = new ArrayDeque<>();
@@ -72,6 +74,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_main);
 
+        emptyText = (TextView) findViewById(R.id.empty_dir);
         gridView = (GridView) findViewById(R.id.gridView);
         imageAdapter = new ImageAdapter(this, mImageList);
         gridView.setAdapter(imageAdapter);
@@ -159,6 +162,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         mPathStack.push(new PathInfo(mCurrentPath, position));
                         mCurrentPath = mImageList.get(position).getPath();
                         updateFileGrid();
+                        gridView.smoothScrollToPosition(0);
+                        gridView.setSelection(0);
                     } else {
                         mGridPosition = position;
 
@@ -224,6 +229,10 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             mCurrentPath = pathInfo.path;
             mGridPosition = pathInfo.position;
             updateFileGrid();
+
+            if (emptyText.getVisibility() == View.VISIBLE) {
+                emptyText.setVisibility(View.GONE);
+            }
         } else {
             super.onBackPressed();
         }
@@ -298,6 +307,16 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         }
                     }
                     notifyListChanged();
+
+                    if (mImageList.size() == 0) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                emptyText.setVisibility(View.VISIBLE);
+                            }
+                        });
+                    }
+
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 } catch (SmbException e) {
