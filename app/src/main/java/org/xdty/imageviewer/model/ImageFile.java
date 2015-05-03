@@ -98,4 +98,14 @@ public class ImageFile {
             return null;
         }
     }
+
+    public boolean isGif() {
+        boolean result = false;
+        if (smbFile != null) {
+            result = smbFile.getName().toLowerCase().endsWith(".gif");
+        } else if (localFile != null) {
+            result = localFile.getName().toLowerCase().endsWith(".gif");
+        }
+        return result;
+    }
 }

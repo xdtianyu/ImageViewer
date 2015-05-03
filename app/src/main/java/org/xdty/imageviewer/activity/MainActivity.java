@@ -38,6 +38,7 @@ import org.xdty.imageviewer.utils.Utils;
 import org.xdty.imageviewer.view.GridAdapter;
 import org.xdty.imageviewer.view.JazzyViewPager;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,6 +52,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
+import pl.droidsonroids.gif.GifDrawable;
 import uk.co.senab.photoview.PhotoView;
 
 import static org.xdty.imageviewer.utils.Utils.RotateBitmap;
@@ -60,7 +62,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     public final static String TAG = "MainActivity";
 
-    private final ReentrantLock sambaLock = new ReentrantLock(true);
+    private final ReentrantLock imageLoadLock = new ReentrantLock(true);
     private TextView emptyText;
     private ArrayList<ImageFile> mImageFileList = new ArrayList<>();
     private GridAdapter gridAdapter;
@@ -455,7 +457,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     }
                 }
 
-                sambaLock.lock();
+                imageLoadLock.lock();
                 Log.d(TAG, "start lock: " + position);
                 InputStream inputStream = null;
                 try {
@@ -487,10 +489,28 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                             bitmap = tmpBitmap;
                     }
 
+//                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+//                    bitmap.compress(CompressFormat.JPEG, 90, out);
+//                    final Bitmap compressed = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
+//                    bitmap.recycle();
+
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            imageViewer.setImageBitmap(bitmap);
+                            //imageViewer.setImageBitmap(compressed);
+                            if (file.isGif()) {
+                                try {
+                                    BufferedInputStream bis = new BufferedInputStream(file.getInputStream());
+                                    GifDrawable gifFromStream = new GifDrawable(bis);
+                                    imageViewer.setImageDrawable(gifFromStream);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                imageViewer.setImageBitmap(bitmap);
+                            }
+
                             Log.d(TAG, "set image bitmap: " + position);
                             int orientation = getRequestedOrientation();
 
@@ -507,7 +527,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     e.printStackTrace();
                 } finally {
                     Log.d(TAG, "release lock: " + position);
-                    sambaLock.unlock();
+                    imageLoadLock.unlock();
                 }
             }
         }).start();
