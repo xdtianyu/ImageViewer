@@ -494,19 +494,26 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 //                    final Bitmap compressed = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
 //                    bitmap.recycle();
 
+                    final GifDrawable gifFromStream;
+                    if (file.isGif()) {
+                        BufferedInputStream bis = null;
+                        try {
+                            bis = new BufferedInputStream(file.getInputStream(), (int) file.getContentLength());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } finally {
+                            gifFromStream = new GifDrawable(bis);
+                        }
+                    } else {
+                        gifFromStream = null;
+                    }
 
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             //imageViewer.setImageBitmap(compressed);
                             if (file.isGif()) {
-                                try {
-                                    BufferedInputStream bis = new BufferedInputStream(file.getInputStream());
-                                    GifDrawable gifFromStream = new GifDrawable(bis);
-                                    imageViewer.setImageDrawable(gifFromStream);
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
+                                imageViewer.setImageDrawable(gifFromStream);
                             } else {
                                 imageViewer.setImageBitmap(bitmap);
                             }
@@ -656,9 +663,17 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
             // release memory
             if (photoView != null) {
-                BitmapDrawable bitmapDrawable = (BitmapDrawable) photoView.getDrawable();
-                if (bitmapDrawable != null) {
-                    bitmapDrawable.getBitmap().recycle();
+
+                if (fileList.get(position).isGif()) {
+                    GifDrawable gifDrawable = (GifDrawable) photoView.getDrawable();
+                    if (gifDrawable != null) {
+                        gifDrawable.recycle();
+                    }
+                } else {
+                    BitmapDrawable bitmapDrawable = (BitmapDrawable) photoView.getDrawable();
+                    if (bitmapDrawable != null) {
+                        bitmapDrawable.getBitmap().recycle();
+                    }
                 }
                 photoView.setImageDrawable(null);
             }
