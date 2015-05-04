@@ -147,15 +147,53 @@ public class ImageFile {
         ArrayList<ImageFile> list = new ArrayList<>();
         if (smbFile != null) {
             SmbFile[] files = smbFile.listFiles();
-            for (SmbFile file:files) {
+            for (SmbFile file : files) {
                 list.add(new ImageFile(file));
             }
         } else if (localFile != null) {
             File[] files = localFile.listFiles();
-            for (File file:files) {
+            for (File file : files) {
                 list.add(new ImageFile(file));
             }
         }
         return list.toArray(new ImageFile[list.size()]);
+    }
+
+    public boolean hasImage() throws SmbException {
+        return hasImage(2);
+    }
+
+    private boolean hasImage(int step) throws SmbException {
+        boolean result = false;
+        if (isDirectory() && step>0) {
+            ImageFile[] files = listFiles();
+            if (files.length > 0) {
+                // TODO: optimize algorithms
+                for (ImageFile f : files) {
+                    if (f.isImage() || f.isDirectory() && f.hasImage(step-1)) {
+                        result = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (step==0) {
+            result = true;
+        }
+
+        return result;
+    }
+
+    public boolean isImage() {
+        String name = getName().toLowerCase();
+        if (name.endsWith(".png") ||
+                name.endsWith(".jpg") ||
+                name.endsWith(".bmp") ||
+                name.endsWith(".gif")) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

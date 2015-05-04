@@ -378,19 +378,20 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             public void run() {
 
                 try {
-                    ImageFile root = null;
-                    root = new ImageFile(path, smbAuth);
+                    ImageFile root = new ImageFile(path, smbAuth);
 
                     if (root.exists() && root.isDirectory()) {
                         ImageFile[] files = root.listFiles();
 
+                        // TODO: read sort config
                         // sort by filename
                         Arrays.sort(files, ImageFileHelper.NAME_COMPARATOR);
 
                         //Log.d(TAG, s.getName());
                         // only show images and directories
                         for (ImageFile f : files) {
-                            if (f.isDirectory() || f.isFile() && Utils.isImage(f.getName())) {
+                            // TODO: read show only image config
+                            if (f.isDirectory() && f.hasImage() || f.isFile() && Utils.isImage(f.getName())) {
                                 mImageFileList.add(f);
                             }
                         }
