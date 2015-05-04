@@ -8,7 +8,6 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -32,7 +31,6 @@ import com.almeros.android.multitouch.RotateGestureDetector;
 import org.xdty.imageviewer.R;
 import org.xdty.imageviewer.model.Config;
 import org.xdty.imageviewer.model.ImageFile;
-import org.xdty.imageviewer.model.ImageResource;
 import org.xdty.imageviewer.model.RotateType;
 import org.xdty.imageviewer.model.SambaInfo;
 import org.xdty.imageviewer.utils.SmbFileHelper;
@@ -44,7 +42,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -93,13 +90,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         gridView = (GridView) findViewById(R.id.gridView);
         gridAdapter = new GridAdapter(this, mImageFileList);
         gridView.setAdapter(gridAdapter);
-
-        mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
-        mViewPager.setAdapter(new ViewPagerAdapter(mImageFileList));
-        mViewPager.setOnPageChangeListener(MainActivity.this);
-        mViewPager.setOffscreenPageLimit(2);
-        mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Standard);
-        //mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Accordion);
 
         // handle only single tap event, show or hide systemUI
         mClickDetector = new android.view.GestureDetector(this,
@@ -188,6 +178,15 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 } else {
                     mGridPosition = position;
 
+                    mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
+                    mViewPager.setAdapter(new ViewPagerAdapter(mImageFileList));
+                    mViewPager.setOnPageChangeListener(MainActivity.this);
+                    mViewPager.setOffscreenPageLimit(2);
+
+                    mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Standard);
+                    //mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Accordion);
+                    mViewPager.getAdapter().notifyDataSetChanged();
+
                     mViewPager.setCurrentItem(position, false);
                     Log.d(TAG, "setCurrentItem:" + position);
                     mViewPager.setVisibility(View.VISIBLE);
@@ -255,6 +254,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         if (mViewPager != null && mViewPager.getVisibility() == View.VISIBLE) {
             mViewPager.setVisibility(View.GONE);
+            mViewPager.removeAllViews();
+            mViewPager = null;
 
             if (getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -443,11 +444,110 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     }
 
+    private void loadImage(final ImageFile file, final ImageView imageViewer, final int position) {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                if (mViewPager != null && position != mGridPosition) {
+                    try {
+                        Thread.sleep(20);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                imageLoadLock.lock();
+                Log.d(TAG, "start lock: " + position);
+                InputStream inputStream = null;
+                try {
+                    inputStream = file.getInputStream();
+                    final Bitmap tmpBitmap = BitmapFactory.decodeStream(inputStream);
+                    final Bitmap bitmap;
+
+                    switch (rotateType) {
+                        case ROTATE_SCREEN_FIT_IMAGE:
+                            // rotate screen to fit image
+                            if (tmpBitmap.getHeight() > tmpBitmap.getWidth()) {
+                                // save status to orientationMap
+                                orientationMap.put(position, true);
+                            } else {
+                                orientationMap.put(position, false);
+                            }
+                            bitmap = tmpBitmap;
+                            break;
+                        case ROTATE_IMAGE_FIT_SCREEN:
+                            // rotate image to fit screen
+                            if (tmpBitmap.getHeight() > tmpBitmap.getWidth()) {
+                                bitmap = RotateBitmap(tmpBitmap, -90);
+                                tmpBitmap.recycle();
+                            } else {
+                                bitmap = tmpBitmap;
+                            }
+                            break;
+                        default:
+                            bitmap = tmpBitmap;
+                    }
+
+//                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+//                    bitmap.compress(CompressFormat.JPEG, 90, out);
+//                    final Bitmap compressed = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
+//                    bitmap.recycle();
+
+                    final GifDrawable gifFromStream;
+                    if (file.isGif()) {
+                        BufferedInputStream bis = null;
+                        try {
+                            bis = new BufferedInputStream(file.getInputStream(), (int) file.getContentLength());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } finally {
+                            gifFromStream = new GifDrawable(bis);
+                        }
+                    } else {
+                        gifFromStream = null;
+                    }
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //imageViewer.setImageBitmap(compressed);
+                            if (file.isGif()) {
+                                imageViewer.setImageDrawable(gifFromStream);
+                            } else {
+                                imageViewer.setImageBitmap(bitmap);
+                            }
+
+                            Log.d(TAG, "set image bitmap: " + position);
+                            int orientation = getRequestedOrientation();
+
+                            if (mViewPager != null && position == mViewPager.getCurrentItem() && rotateType == RotateType.ROTATE_SCREEN_FIT_IMAGE) {
+                                if (orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                                } else if (!orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                                }
+                            }
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    Log.d(TAG, "release lock: " + position);
+                    imageLoadLock.unlock();
+                }
+            }
+        }).start();
+    }
+
     private void notifyListChanged() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mViewPager.getAdapter().notifyDataSetChanged();
+                if (mViewPager != null) {
+                    mViewPager.getAdapter().notifyDataSetChanged();
+                }
                 gridAdapter.clearThumbnailList();
                 gridAdapter.notifyDataSetChanged();
             }
@@ -517,11 +617,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     private boolean isSystemUIVisible() {
         return (getWindow().getDecorView().getSystemUiVisibility() & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0;
-    }
-
-    private void loadImage(ImageFile imageFile, ImageView imageView, int position) {
-        LoadImageTask task = new LoadImageTask(imageFile, imageView);
-        task.execute(position);
     }
 
     private class ViewPagerAdapter extends PagerAdapter {
@@ -627,133 +722,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             this.position = position;
             this.path = path;
         }
-    }
-
-    private class LoadImageTask extends AsyncTask<Integer, Void, ImageResource> {
-
-        private final WeakReference<ImageView> imageViewWeakReference;
-        private final WeakReference<ImageFile> imageFileWeakReference;
-        private int position;
-
-        public LoadImageTask(ImageFile imageFile, ImageView imageView) {
-            this.imageFileWeakReference = new WeakReference<>(imageFile);
-            this.imageViewWeakReference = new WeakReference<>(imageView);
-        }
-
-        @Override
-        protected ImageResource doInBackground(Integer... params) {
-
-            imageLoadLock.lock();
-
-            position = params[0];
-
-            final ImageFile file = imageFileWeakReference.get();
-
-            GifDrawable gifFromStream = null;
-            Bitmap bitmap = null;
-
-            if (file != null) {
-                try {
-
-                    if ((int) imageViewWeakReference.get().getTag() != position) {
-                        return null;
-                    }
-                    InputStream inputStream = file.getInputStream();
-
-                    final BitmapFactory.Options options = new BitmapFactory.Options();
-
-                    options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-
-                    final Bitmap tmpBitmap = BitmapFactory.decodeStream(inputStream, null, options);
-
-                    int imageHeight = options.outHeight;
-                    int imageWidth = options.outWidth;
-
-                    Log.d(TAG, ""+imageWidth+"x"+imageHeight);
-
-                    switch (rotateType) {
-                        case ROTATE_SCREEN_FIT_IMAGE:
-                            // rotate screen to fit image
-                            if (imageHeight > imageWidth) {
-                                // save status to orientationMap
-                                orientationMap.put(position, true);
-                            } else {
-                                orientationMap.put(position, false);
-                            }
-                            bitmap = tmpBitmap;
-                            break;
-                        case ROTATE_IMAGE_FIT_SCREEN:
-                            // rotate image to fit screen
-                            if (imageHeight > imageWidth) {
-                                bitmap = RotateBitmap(tmpBitmap, -90);
-                                tmpBitmap.recycle();
-                            } else {
-                                bitmap = tmpBitmap;
-                            }
-                            break;
-                        default:
-                            bitmap = tmpBitmap;
-                    }
-
-                    if (file.isGif()) {
-                        try {
-                            bitmap = null;
-                            BufferedInputStream bis = new BufferedInputStream(file.getInputStream(), (int) file.getContentLength());
-                            gifFromStream = new GifDrawable(bis);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        gifFromStream = null;
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            imageLoadLock.unlock();
-
-            return new ImageResource(gifFromStream, bitmap);
-        }
-
-        @Override
-        protected void onPostExecute(ImageResource imageResource) {
-
-            if (imageResource != null) {
-                final ImageView imageView = imageViewWeakReference.get();
-                if (imageView != null) {
-                    if ((int) imageView.getTag() != position) {
-                        Log.d(TAG, "imageView position changed");
-                        return;
-                    }
-                    if (imageResource.getBitmap() != null) {
-                        imageView.setImageBitmap(imageResource.getBitmap());
-                    } else if (imageResource.getGifDrawable() != null) {
-                        imageView.setImageDrawable(imageResource.getGifDrawable());
-                    } else {
-                        Log.d(TAG, "imageResource is null ");
-                        return;
-                    }
-
-                    Log.d(TAG, "set image bitmap: " + position);
-                    int orientation = getRequestedOrientation();
-
-                    if (mViewPager != null && position == mViewPager.getCurrentItem() && rotateType == RotateType.ROTATE_SCREEN_FIT_IMAGE) {
-                        if (orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-                            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                        } else if (!orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-                            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                        }
-                    }
-
-                } else {
-                    Log.e(TAG, "imageView is null");
-                }
-            } else {
-                Log.e(TAG, "imageResource is null");
-            }
-        }
-
     }
 
 }
