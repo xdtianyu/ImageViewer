@@ -119,13 +119,16 @@ public class GridAdapter extends BaseAdapter {
         return convertView;
     }
 
-    // TODO: generate samba file md5 and thumbnail
+    // generate samba file md5 and thumbnail
     private void updateThumbnail(final ImageView imageView, final int position) {
 
         new Thread(new Runnable() {
             @Override
             public void run() {
 
+                if (mImageList.size() < position) {
+                    return;
+                }
                 // get file's md5 and check if thumbnail exist
                 String md5 = Utils.md5(mImageList.get(position));
                 File f = new File(mCacheDir, md5);
