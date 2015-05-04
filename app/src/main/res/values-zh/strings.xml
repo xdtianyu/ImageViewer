@@ -21,4 +21,5 @@
     <string name="image_original">原始方向保持不变</string>
     <string name="image_fit_screen">旋转图片以适应屏幕</string>
     <string name="screen_fit_image">旋转屏幕以适应图片</string>
+    <string name="file_explorer_mode">文件浏览模式</string>
 </resources>

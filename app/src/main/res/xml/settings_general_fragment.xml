@@ -6,4 +6,8 @@
         android:entries="@array/image_rotate_entries"
         android:entryValues="@array/image_rotate_values"
         android:defaultValue="2"/>
+    <SwitchPreference
+        android:title="@string/file_explorer_mode"
+        android:key="file_explorer_mode"
+        android:defaultValue="false"/>
 </PreferenceScreen>

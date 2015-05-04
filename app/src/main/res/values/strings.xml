@@ -25,6 +25,8 @@
     <string name="windows_share_folder">Shared folder</string>
     <string name="windows_share_summary">Connect windows share or samba server </string>
 
+    <string name="file_explorer_mode">File explorer mode</string>
+
     <string name="image_rotate_type">Image display</string>
     <string name="image_original">Original</string>
     <string name="image_fit_screen">Rotate image to fit screen</string>

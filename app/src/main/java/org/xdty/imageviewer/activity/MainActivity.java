@@ -78,6 +78,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private int mGridPosition = -1;
     private RotateType rotateType = RotateType.ORIGINAL;
     private SambaInfo sambaInfo = new SambaInfo();
+    private boolean isFileExplorerMode = false;
     private NtlmPasswordAuthentication smbAuth;
 
     @Override
@@ -227,6 +228,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         smbAuth = new NtlmPasswordAuthentication("", sambaInfo.username, sambaInfo.password);
         rotateType = RotateType.build(sharedPreferences.getString(Config.ROTATE_TYPE, "2"));
+
+        isFileExplorerMode = sharedPreferences.getBoolean(Config.FILE_EXPLORER_MODE, false);
 
         if (!serverPath.equals(sambaInfo.build())) {
             mCurrentPath = Config.ROOT_PATH;
@@ -391,7 +394,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         // only show images and directories
                         for (ImageFile f : files) {
                             // TODO: read show only image config
-                            if (f.isDirectory() && f.hasImage() || f.isFile() && Utils.isImage(f.getName())) {
+                            if (f.isDirectory() && (!isFileExplorerMode || f.hasImage()) ||
+                                    f.isFile() && Utils.isImage(f.getName())) {
                                 mImageFileList.add(f);
                             }
                         }
