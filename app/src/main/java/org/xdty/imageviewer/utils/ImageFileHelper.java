@@ -1,17 +1,17 @@
 package org.xdty.imageviewer.utils;
 
-import java.util.Comparator;
+import org.xdty.imageviewer.model.ImageFile;
 
-import jcifs.smb.SmbFile;
+import java.util.Comparator;
 
 /**
  * Created by ty on 15-4-26.
  */
-public class SmbFileHelper {
+public class ImageFileHelper {
 
-    public static final Comparator<SmbFile> NAME_COMPARATOR = new Comparator<SmbFile>() {
+    public static final Comparator<ImageFile> NAME_COMPARATOR = new Comparator<ImageFile>() {
         @Override
-        public int compare(SmbFile lhs, SmbFile rhs) {
+        public int compare(ImageFile lhs, ImageFile rhs) {
             return compare(lhs.getName(), rhs.getName());
         }
 

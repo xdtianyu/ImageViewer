@@ -33,7 +33,7 @@ import org.xdty.imageviewer.model.Config;
 import org.xdty.imageviewer.model.ImageFile;
 import org.xdty.imageviewer.model.RotateType;
 import org.xdty.imageviewer.model.SambaInfo;
-import org.xdty.imageviewer.utils.SmbFileHelper;
+import org.xdty.imageviewer.utils.ImageFileHelper;
 import org.xdty.imageviewer.utils.Utils;
 import org.xdty.imageviewer.view.GridAdapter;
 import org.xdty.imageviewer.view.JazzyViewPager;
@@ -321,10 +321,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private void updateFileGrid() {
         if (mCurrentPath.equals(Config.ROOT_PATH)) {
             loadRootDir();
-        } else if (mCurrentPath.startsWith(Config.SAMBA_PREFIX)) {
-            loadSambaDir(mCurrentPath);
         } else {
-            loadLocalDir(mCurrentPath);
+            loadDir(mCurrentPath);
         }
     }
 
@@ -337,6 +335,14 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         new Thread(new Runnable() {
             @Override
             public void run() {
+
+                String localRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
+
+                File root = new File(localRoot);
+                if (root.isDirectory() || root.isFile()) {
+                    mImageFileList.add(new ImageFile(root));
+                }
+
                 try {
                     SmbFile f = new SmbFile(sambaInfo.build(), smbAuth);
                     if (f.canRead()) {
@@ -348,13 +354,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     e.printStackTrace();
                 }
 
-                String localRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
-
-                File root = new File(localRoot);
-                if (root.isDirectory() || root.isFile()) {
-                    mImageFileList.add(new ImageFile(root));
-                }
-
                 notifyListChanged();
 
                 if (mImageFileList.size() == 0) {
@@ -369,67 +368,36 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         }).start();
     }
 
-    private void loadLocalDir(final String path) {
+    private void loadDir(final String path) {
         mImageFileList.clear();
         rotationMap.clear();
         orientationMap.clear();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                File root = new File(path);
-
-                if (root.exists() && root.isDirectory()) {
-                    File[] files = root.listFiles();
-                    for (File f : files) {
-                        if (f.isDirectory() || f.isFile() && Utils.isImage(f.getName())) {
-                            mImageFileList.add(new ImageFile(f));
-                        }
-                    }
-                }
-
-                notifyListChanged();
-
-                if (mImageFileList.size() == 0) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            emptyText.setVisibility(View.VISIBLE);
-                        }
-                    });
-                }
-            }
-        }).start();
-
-    }
-
-    private void loadSambaDir(final String path) {
-
-        mImageFileList.clear();
-        rotationMap.clear();
-        orientationMap.clear();
         new Thread(new Runnable() {
             @Override
             public void run() {
 
                 try {
-                    SmbFile file = new SmbFile(path, smbAuth);
-                    SmbFile[] lists = file.listFiles();
+                    ImageFile root = null;
+                    root = new ImageFile(path, smbAuth);
 
-                    // sort by filename
-                    Arrays.sort(lists, SmbFileHelper.NAME_COMPARATOR);
+                    if (root.exists() && root.isDirectory()) {
+                        ImageFile[] files = root.listFiles();
 
-                    for (SmbFile s : lists) {
+                        // sort by filename
+                        Arrays.sort(files, ImageFileHelper.NAME_COMPARATOR);
+
                         //Log.d(TAG, s.getName());
                         // only show images and directories
-                        if (s.isDirectory() || s.isFile() && Utils.isImage(s.getName())) {
-                            mImageFileList.add(new ImageFile(s));
+                        for (ImageFile f : files) {
+                            if (f.isDirectory() || f.isFile() && Utils.isImage(f.getName())) {
+                                mImageFileList.add(f);
+                            }
                         }
                     }
+
                     notifyListChanged();
-                } catch (MalformedURLException | SmbException e) {
-                    e.printStackTrace();
-                } finally {
+
                     if (mImageFileList.size() == 0) {
                         handler.post(new Runnable() {
                             @Override
@@ -438,6 +406,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                             }
                         });
                     }
+                } catch (MalformedURLException | SmbException e) {
+                    e.printStackTrace();
                 }
             }
         }).start();

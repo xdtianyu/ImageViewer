@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
 
+import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 
@@ -14,6 +17,19 @@ import jcifs.smb.SmbFile;
 public class ImageFile {
     private SmbFile smbFile;
     private File localFile;
+
+    public ImageFile(String path) throws MalformedURLException {
+        new ImageFile(path, null);
+    }
+
+    public ImageFile(String path, NtlmPasswordAuthentication auth) throws MalformedURLException {
+
+        if (path.startsWith(Config.SAMBA_PREFIX) && auth != null) {
+            this.smbFile = new SmbFile(path, auth);
+        } else {
+            this.localFile = new File(path);
+        }
+    }
 
     public ImageFile(SmbFile smbFile) {
         this.smbFile = smbFile;
@@ -56,6 +72,14 @@ public class ImageFile {
             return smbFile.canWrite();
         } else {
             return localFile != null && localFile.canWrite();
+        }
+    }
+
+    public boolean exists() throws SmbException {
+        if (smbFile != null) {
+            return smbFile.exists();
+        } else {
+            return localFile != null && localFile.exists();
         }
     }
 
@@ -107,5 +131,31 @@ public class ImageFile {
             result = localFile.getName().toLowerCase().endsWith(".gif");
         }
         return result;
+    }
+
+    public boolean isFile() throws SmbException {
+        boolean result = false;
+        if (smbFile != null) {
+            result = smbFile.isFile();
+        } else if (localFile != null) {
+            result = localFile.isFile();
+        }
+        return result;
+    }
+
+    public ImageFile[] listFiles() throws SmbException {
+        ArrayList<ImageFile> list = new ArrayList<>();
+        if (smbFile != null) {
+            SmbFile[] files = smbFile.listFiles();
+            for (SmbFile file:files) {
+                list.add(new ImageFile(file));
+            }
+        } else if (localFile != null) {
+            File[] files = localFile.listFiles();
+            for (File file:files) {
+                list.add(new ImageFile(file));
+            }
+        }
+        return list.toArray(new ImageFile[list.size()]);
     }
 }
