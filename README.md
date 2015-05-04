@@ -20,6 +20,8 @@ ImageViewer is a quick photo browser for LAN/WAN's samba shared photos.
 
 [JazzyViewPager](https://github.com/jfeinstein10/JazzyViewPager): an easy to use ViewPager that adds an awesome set of custom swiping animations
 
+[android-gif-drawable](https://github.com/koral--/android-gif-drawable): Views and Drawable for animated GIFs in Android
+
 ### License ###
 
     Copyright 2015 xdtianyu
