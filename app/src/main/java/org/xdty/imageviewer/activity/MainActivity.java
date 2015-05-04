@@ -394,7 +394,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         // only show images and directories
                         for (ImageFile f : files) {
                             // TODO: read show only image config
-                            if (f.isDirectory() && (!isFileExplorerMode || f.hasImage()) ||
+                            if (f.isDirectory() && (isFileExplorerMode || f.hasImage()) ||
                                     f.isFile() && Utils.isImage(f.getName())) {
                                 mImageFileList.add(f);
                             }
