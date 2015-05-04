@@ -664,7 +664,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             // release memory
             if (photoView != null) {
 
-                if (fileList.get(position).isGif()) {
+                if (photoView.getDrawable() instanceof GifDrawable) {
                     GifDrawable gifDrawable = (GifDrawable) photoView.getDrawable();
                     if (gifDrawable != null) {
                         gifDrawable.recycle();
