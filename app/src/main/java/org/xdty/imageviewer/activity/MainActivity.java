@@ -66,6 +66,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private final ReentrantLock imageLoadLock = new ReentrantLock(true);
     private TextView emptyText;
     private ArrayList<ImageFile> mImageFileList = new ArrayList<>();
+    private ArrayList<ImageFile> mImageList = new ArrayList<>();
     private GridAdapter gridAdapter;
     private ArrayDeque<PathInfo> mPathStack = new ArrayDeque<>();
     private String mCurrentPath = "";
@@ -85,6 +86,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private ArrayList<String> excludeList = new ArrayList<>();
     private Runnable hideSystemUIRunnable;
     private boolean isMenuOpened = false;
+    private boolean updateGridOnBack = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +104,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         gridView.setAdapter(gridAdapter);
 
         mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
-        mViewPager.setAdapter(new ViewPagerAdapter(mImageFileList));
+        mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
         mViewPager.setOnPageChangeListener(MainActivity.this);
         mViewPager.setOffscreenPageLimit(2);
         mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Standard);
@@ -196,7 +198,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 } else {
                     mGridPosition = position;
 
-                    mViewPager.setCurrentItem(position, false);
+                    mViewPager.setCurrentItem(mImageList.indexOf(mImageFileList.get(position)), false);
                     Log.d(TAG, "setCurrentItem:" + position);
                     mViewPager.setVisibility(View.VISIBLE);
 
@@ -243,7 +245,13 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         if (!serverPath.equals(sambaInfo.build())) {
             mCurrentPath = Config.ROOT_PATH;
         }
-        updateFileGrid();
+
+        if (mViewPager == null || mViewPager.getVisibility() != View.VISIBLE) {
+            updateFileGrid();
+        } else {
+            updateGridOnBack = true;
+        }
+
     }
 
     @Override
@@ -275,6 +283,12 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             }
             showSystemUI();
             System.gc();
+
+            if (updateGridOnBack) {
+                updateFileGrid();
+                updateGridOnBack = false;
+            }
+
         } else if (mPathStack.size() > 0) {
             PathInfo pathInfo = mPathStack.pop();
             mCurrentPath = pathInfo.path;
@@ -351,6 +365,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private void updateFileGrid() {
 
         mImageFileList.clear();
+        mImageList.clear();
         rotationMap.clear();
         orientationMap.clear();
         mViewPager.getAdapter().notifyDataSetChanged();
@@ -373,7 +388,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 File root = new File(localRoot);
                 if (root.isDirectory() || root.isFile()) {
                     mImageFileList.add(new ImageFile(root));
-                    notifyListChanged();
                 }
 
                 try {
@@ -381,12 +395,13 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     if (f.canRead()) {
                         if (f.isDirectory() || f.isFile() && Utils.isImage(f.getName())) {
                             mImageFileList.add(new ImageFile(f));
-                            notifyListChanged();
                         }
                     }
                 } catch (MalformedURLException | SmbException e) {
                     e.printStackTrace();
                 }
+
+                notifyListChanged();
 
                 if (mImageFileList.size() == 0) {
                     handler.post(new Runnable() {
@@ -425,11 +440,18 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                                 if (f.isDirectory() && (isFileExplorerMode || f.hasImage()) ||
                                         f.isFile() && Utils.isImage(f.getName())) {
                                     mImageFileList.add(f);
-                                    notifyListChanged();
                                 }
                             }
                         }
+
+                        for (ImageFile f : files) {
+                            if (f.isImage()) {
+                                mImageList.add(f);
+                            }
+                        }
                     }
+
+                    notifyListChanged();
 
                     if (mImageFileList.size() == 0) {
                         handler.post(new Runnable() {
@@ -577,7 +599,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     @Override
     public void onPageSelected(int position) {
         Log.d(TAG, "onPageSelected:" + position);
-        mGridPosition = position;
+        mGridPosition = mImageFileList.indexOf(mImageList.get(position));
     }
 
     @Override
