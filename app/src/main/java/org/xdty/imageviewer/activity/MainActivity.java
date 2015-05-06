@@ -82,6 +82,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private NtlmPasswordAuthentication smbAuth;
 
     private ArrayList<String> excludeList = new ArrayList<>();
+    private Runnable hideSystemUIRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,16 +99,22 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         gridAdapter = new GridAdapter(this, mImageFileList);
         gridView.setAdapter(gridAdapter);
 
+        mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
+        mViewPager.setAdapter(new ViewPagerAdapter(mImageFileList));
+        mViewPager.setOnPageChangeListener(MainActivity.this);
+        mViewPager.setOffscreenPageLimit(2);
+        mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Standard);
+
         // handle only single tap event, show or hide systemUI
         mClickDetector = new android.view.GestureDetector(this,
                 new android.view.GestureDetector.SimpleOnGestureListener() {
                     @Override
                     public boolean onSingleTapConfirmed(MotionEvent e) {
                         if (isSystemUIVisible()) {
-                            hideSystemUI();
+                            hideSystemUIDelayed(200);
                         } else {
                             showSystemUI();
-                            hideSystemUIDelayed();
+                            hideSystemUIDelayed(3000);
                         }
                         return true;
                     }
@@ -185,15 +192,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 } else {
                     mGridPosition = position;
 
-                    mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
-                    mViewPager.setAdapter(new ViewPagerAdapter(mImageFileList));
-                    mViewPager.setOnPageChangeListener(MainActivity.this);
-                    mViewPager.setOffscreenPageLimit(2);
-
-                    mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Standard);
-                    //mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Accordion);
-                    mViewPager.getAdapter().notifyDataSetChanged();
-
                     mViewPager.setCurrentItem(position, false);
                     Log.d(TAG, "setCurrentItem:" + position);
                     mViewPager.setVisibility(View.VISIBLE);
@@ -263,8 +261,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         if (mViewPager != null && mViewPager.getVisibility() == View.VISIBLE) {
             mViewPager.setVisibility(View.GONE);
-            mViewPager.removeAllViews();
-            mViewPager = null;
+//            mViewPager.removeAllViews();
+//            mViewPager = null;
 
             if (getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -328,6 +326,12 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     }
 
     private void updateFileGrid() {
+
+        mImageFileList.clear();
+        rotationMap.clear();
+        orientationMap.clear();
+        mViewPager.getAdapter().notifyDataSetChanged();
+
         if (mCurrentPath.equals(Config.ROOT_PATH)) {
             loadRootDir();
         } else {
@@ -336,10 +340,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     }
 
     private void loadRootDir() {
-
-        mImageFileList.clear();
-        rotationMap.clear();
-        orientationMap.clear();
 
         new Thread(new Runnable() {
             @Override
@@ -378,9 +378,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     }
 
     private void loadDir(final String path) {
-        mImageFileList.clear();
-        rotationMap.clear();
-        orientationMap.clear();
 
         new Thread(new Runnable() {
             @Override
@@ -588,15 +585,21 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
 
-    private void hideSystemUIDelayed() {
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (mViewPager != null && mViewPager.getVisibility() == View.VISIBLE) {
-                    hideSystemUI();
+    private void hideSystemUIDelayed(int timeout) {
+
+        if (hideSystemUIRunnable == null) {
+            hideSystemUIRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (mViewPager != null && mViewPager.getVisibility() == View.VISIBLE) {
+                        hideSystemUI();
+                    }
                 }
-            }
-        }, 3000);
+            };
+        }
+
+        handler.removeCallbacks(hideSystemUIRunnable);
+        handler.postDelayed(hideSystemUIRunnable, timeout);
     }
 
     private boolean isSystemUIVisible() {
