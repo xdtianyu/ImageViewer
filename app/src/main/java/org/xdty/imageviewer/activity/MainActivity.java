@@ -84,6 +84,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     private ArrayList<String> excludeList = new ArrayList<>();
     private Runnable hideSystemUIRunnable;
+    private boolean isMenuOpened = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +113,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     @Override
                     public boolean onSingleTapConfirmed(MotionEvent e) {
                         if (isSystemUIVisible()) {
-                            hideSystemUIDelayed(200);
+                            if (!isMenuOpened) {
+                                hideSystemUIDelayed(0);
+                            }
                         } else {
                             showSystemUI();
                             hideSystemUIDelayed(3000);
@@ -216,6 +219,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 return true;
             }
         });
+
     }
 
     @Override
@@ -245,6 +249,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     @Override
     protected void onResume() {
         super.onResume();
+        isMenuOpened = false;
         Log.d(TAG, "onResume");
     }
 
@@ -314,7 +319,24 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     }
 
     @Override
+    public boolean onMenuOpened(int featureId, Menu menu) {
+        cancelHideSystemUIDelayed();
+        isMenuOpened = true;
+        return super.onMenuOpened(featureId, menu);
+    }
+
+    @Override
+    public void onPanelClosed(int featureId, Menu menu) {
+        isMenuOpened = false;
+        hideSystemUIDelayed(3000);
+        super.onPanelClosed(featureId, menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
+        isMenuOpened = false;
+
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
@@ -351,6 +373,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 File root = new File(localRoot);
                 if (root.isDirectory() || root.isFile()) {
                     mImageFileList.add(new ImageFile(root));
+                    notifyListChanged();
                 }
 
                 try {
@@ -358,13 +381,12 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     if (f.canRead()) {
                         if (f.isDirectory() || f.isFile() && Utils.isImage(f.getName())) {
                             mImageFileList.add(new ImageFile(f));
+                            notifyListChanged();
                         }
                     }
                 } catch (MalformedURLException | SmbException e) {
                     e.printStackTrace();
                 }
-
-                notifyListChanged();
 
                 if (mImageFileList.size() == 0) {
                     handler.post(new Runnable() {
@@ -403,12 +425,11 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                                 if (f.isDirectory() && (isFileExplorerMode || f.hasImage()) ||
                                         f.isFile() && Utils.isImage(f.getName())) {
                                     mImageFileList.add(f);
+                                    notifyListChanged();
                                 }
                             }
                         }
                     }
-
-                    notifyListChanged();
 
                     if (mImageFileList.size() == 0) {
                         handler.post(new Runnable() {
@@ -499,7 +520,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
                             ImageView imageViewer = imageViewWeakReference.get();
 
-                            if (imageViewer!=null) {
+                            if (imageViewer != null) {
                                 //imageViewer.setImageBitmap(compressed);
                                 if (file.isGif()) {
                                     imageViewer.setImageDrawable(gifFromStream);
@@ -518,7 +539,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                                     }
                                 }
                             } else {
-                                if (gifFromStream!=null) {
+                                if (gifFromStream != null) {
                                     gifFromStream.recycle();
                                 }
                                 bitmap.recycle();
@@ -613,6 +634,12 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         handler.removeCallbacks(hideSystemUIRunnable);
         handler.postDelayed(hideSystemUIRunnable, timeout);
+    }
+
+    private void cancelHideSystemUIDelayed() {
+        if (hideSystemUIRunnable != null) {
+            handler.removeCallbacks(hideSystemUIRunnable);
+        }
     }
 
     private boolean isSystemUIVisible() {
