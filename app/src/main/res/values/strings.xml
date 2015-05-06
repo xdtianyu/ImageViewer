@@ -26,6 +26,7 @@
     <string name="windows_share_summary">Connect windows share or samba server </string>
 
     <string name="file_explorer_mode">File explorer mode</string>
+    <string name="show_hiding_files">Show hiding files</string>
 
     <string name="image_rotate_type">Image display</string>
     <string name="image_original">Original</string>

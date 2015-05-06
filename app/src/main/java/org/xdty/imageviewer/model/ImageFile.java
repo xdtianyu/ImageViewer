@@ -49,6 +49,16 @@ public class ImageFile {
         return result;
     }
 
+    public boolean isHiding() {
+        boolean result = false;
+        if (smbFile != null) {
+            result = smbFile.getName().toLowerCase().startsWith(".");
+        } else if (localFile != null) {
+            result = localFile.getName().toLowerCase().startsWith(".");
+        }
+        return result;
+    }
+
     public String getName() {
         if (smbFile != null) {
             return smbFile.getName();

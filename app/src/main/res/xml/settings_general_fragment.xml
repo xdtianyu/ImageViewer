@@ -9,5 +9,9 @@
     <SwitchPreference
         android:title="@string/file_explorer_mode"
         android:key="file_explorer_mode"
+        android:defaultValue="true"/>
+    <SwitchPreference
+        android:title="@string/show_hiding_files"
+        android:key="show_hiding_file"
         android:defaultValue="false"/>
 </PreferenceScreen>

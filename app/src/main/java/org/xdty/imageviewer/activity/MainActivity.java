@@ -81,6 +81,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private RotateType rotateType = RotateType.ORIGINAL;
     private SambaInfo sambaInfo = new SambaInfo();
     private boolean isFileExplorerMode = false;
+    private boolean isShowHidingFiles = false;
     private NtlmPasswordAuthentication smbAuth;
 
     private ArrayList<String> excludeList = new ArrayList<>();
@@ -241,6 +242,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         rotateType = RotateType.build(sharedPreferences.getString(Config.ROTATE_TYPE, "2"));
 
         isFileExplorerMode = sharedPreferences.getBoolean(Config.FILE_EXPLORER_MODE, false);
+        isShowHidingFiles = sharedPreferences.getBoolean(Config.SHOW_HIDING_FILES, false);
 
         if (!serverPath.equals(sambaInfo.build())) {
             mCurrentPath = Config.ROOT_PATH;
@@ -439,14 +441,18 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                                 // TODO: read show only image config
                                 if (f.isDirectory() && (isFileExplorerMode || f.hasImage()) ||
                                         f.isFile() && Utils.isImage(f.getName())) {
-                                    mImageFileList.add(f);
+                                    if (isShowHidingFiles || (!isShowHidingFiles && !f.isHiding())) {
+                                        mImageFileList.add(f);
+                                    }
                                 }
                             }
                         }
 
                         for (ImageFile f : files) {
                             if (f.isImage()) {
-                                mImageList.add(f);
+                                if (isShowHidingFiles || (!isShowHidingFiles && !f.isHiding())) {
+                                    mImageList.add(f);
+                                }
                             }
                         }
                     }
