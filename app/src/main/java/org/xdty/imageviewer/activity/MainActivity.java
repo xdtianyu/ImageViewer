@@ -42,6 +42,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -425,7 +426,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     }
 
-    private void loadImage(final ImageFile file, final ImageView imageViewer, final int position) {
+    private void loadImage(final ImageFile file, final ImageView imageView, final int position) {
+
+        final WeakReference<ImageView> imageViewWeakReference = new WeakReference<>(imageView);
 
         new Thread(new Runnable() {
             @Override
@@ -493,22 +496,32 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            //imageViewer.setImageBitmap(compressed);
-                            if (file.isGif()) {
-                                imageViewer.setImageDrawable(gifFromStream);
-                            } else {
-                                imageViewer.setImageBitmap(bitmap);
-                            }
 
-                            Log.d(TAG, "set image bitmap: " + position);
-                            int orientation = getRequestedOrientation();
+                            ImageView imageViewer = imageViewWeakReference.get();
 
-                            if (mViewPager != null && position == mViewPager.getCurrentItem() && rotateType == RotateType.ROTATE_SCREEN_FIT_IMAGE) {
-                                if (orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                                } else if (!orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                            if (imageViewer!=null) {
+                                //imageViewer.setImageBitmap(compressed);
+                                if (file.isGif()) {
+                                    imageViewer.setImageDrawable(gifFromStream);
+                                } else {
+                                    imageViewer.setImageBitmap(bitmap);
                                 }
+
+                                Log.d(TAG, "set image bitmap: " + position);
+                                int orientation = getRequestedOrientation();
+
+                                if (mViewPager != null && position == mViewPager.getCurrentItem() && rotateType == RotateType.ROTATE_SCREEN_FIT_IMAGE) {
+                                    if (orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                                    } else if (!orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                                    }
+                                }
+                            } else {
+                                if (gifFromStream!=null) {
+                                    gifFromStream.recycle();
+                                }
+                                bitmap.recycle();
                             }
                         }
                     });
