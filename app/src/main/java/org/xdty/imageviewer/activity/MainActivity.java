@@ -81,11 +81,17 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private boolean isFileExplorerMode = false;
     private NtlmPasswordAuthentication smbAuth;
 
+    private ArrayList<String> excludeList = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_main);
+
+        excludeList.add("Android");
+        excludeList.add("storage");
+        excludeList.add("tmp");
 
         emptyText = (TextView) findViewById(R.id.empty_dir);
         gridView = (GridView) findViewById(R.id.gridView);
@@ -393,10 +399,13 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         //Log.d(TAG, s.getName());
                         // only show images and directories
                         for (ImageFile f : files) {
-                            // TODO: read show only image config
-                            if (f.isDirectory() && (isFileExplorerMode || f.hasImage()) ||
-                                    f.isFile() && Utils.isImage(f.getName())) {
-                                mImageFileList.add(f);
+                            // TODO: read exclude settings
+                            if (!excludeList.contains(f.getName())) {
+                                // TODO: read show only image config
+                                if (f.isDirectory() && (isFileExplorerMode || f.hasImage()) ||
+                                        f.isFile() && Utils.isImage(f.getName())) {
+                                    mImageFileList.add(f);
+                                }
                             }
                         }
                     }
