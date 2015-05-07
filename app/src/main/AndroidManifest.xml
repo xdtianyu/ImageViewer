@@ -24,6 +24,14 @@
             android:name=".activity.SettingsActivity"
             android:label="@string/settings">
         </activity>
+        <activity android:name=".activity.EditServerActivity"
+                  android:theme="@style/AddShareTheme"
+                  android:label="@string/add_share_activity">
+            <intent-filter>
+                <action android:name="org.xdty.imageviewer.action.ACTION_ADD_SHARED_FOLDER"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

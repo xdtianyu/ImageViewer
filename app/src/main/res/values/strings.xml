@@ -18,20 +18,30 @@
     <string name="check_description">check</string>
 
     <string name="network_share">Network share</string>
-    <string name="windows_share">Windows share</string>
-    <string name="windows_share_server">Server address</string>
-    <string name="windows_share_username">Username</string>
-    <string name="windows_share_password">Password</string>
-    <string name="windows_share_folder">Shared folder</string>
+    <string name="windows_share">Add windows share</string>
+    <string name="windows_share_server">Server address:</string>
+    <string name="windows_share_server_hint" translatable="false">192.168.1.100</string>
+    <string name="windows_share_username">Username:</string>
+    <string name="windows_share_username_hint" translatable="false">Administrator</string>
+    <string name="windows_share_password">Password:</string>
+    <string name="windows_share_password_hint" translatable="false">********</string>
+    <string name="windows_share_folder">Shared folder:</string>
+    <string name="windows_share_folder_hint" translatable="false">mnt</string>
     <string name="windows_share_summary">Connect windows share or samba server </string>
+    <string name="server_address_cannot_be_empty">Server address cannot be empty</string>
 
     <string name="file_explorer_mode">File explorer mode</string>
     <string name="show_hiding_files">Show hiding files</string>
+    <string name="add_share_activity">Add network shared folder</string>
+    <string name="added_shared_folder">Added network shared folder</string>
 
     <string name="image_rotate_type">Image display</string>
     <string name="image_original">Original</string>
     <string name="image_fit_screen">Rotate image to fit screen</string>
     <string name="screen_fit_image">Rotate screen to fit image</string>
+    <string name="action_save">Save</string>
+    <string name="windows_share_name">Server name:</string>
+    <string name="windows_share_name_hint">My samba share</string>
     <string-array name="image_rotate_entries">
         <item>@string/image_original</item>
         <item>@string/image_fit_screen</item>

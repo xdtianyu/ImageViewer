@@ -9,4 +9,24 @@
     <style name="action_bar_theme" parent="@android:style/Widget.Material.ActionBar.Solid">
         <item name="android:background">#60000000</item>
     </style>
+    <style name="static_text_style">
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+    <style name="edit_text_style">
+        <item name="android:layout_weight">2.5</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">0dp</item>
+    </style>
+
+    <style name="AddShareTheme" parent="@android:style/Theme.Material">
+        <item name="android:actionButtonStyle">@style/action_button_style</item>
+    </style>
+
+    <style name="action_button_style" parent="@android:style/Theme.Material">
+        <item name="android:minWidth">50dp</item>
+        <item name="android:paddingRight">0dp</item>
+    </style>
 </resources>

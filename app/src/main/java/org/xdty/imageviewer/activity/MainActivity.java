@@ -28,6 +28,9 @@ import android.widget.TextView;
 
 import com.almeros.android.multitouch.RotateGestureDetector;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.xdty.imageviewer.R;
 import org.xdty.imageviewer.model.Config;
 import org.xdty.imageviewer.model.ImageFile;
@@ -50,7 +53,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import pl.droidsonroids.gif.GifDrawable;
@@ -79,15 +81,15 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private GridView gridView;
     private int mGridPosition = -1;
     private RotateType rotateType = RotateType.ORIGINAL;
-    private SambaInfo sambaInfo = new SambaInfo();
+    private SambaInfo currentSambaInfo = new SambaInfo();
     private boolean isFileExplorerMode = false;
     private boolean isShowHidingFiles = false;
-    private NtlmPasswordAuthentication smbAuth;
 
     private ArrayList<String> excludeList = new ArrayList<>();
     private Runnable hideSystemUIRunnable;
     private boolean isMenuOpened = false;
     private boolean updateGridOnBack = false;
+    private ArrayList<SambaInfo> sambaInfoList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -192,7 +194,18 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (mImageFileList.get(position).isDirectory()) {
                     mPathStack.push(new PathInfo(mCurrentPath, position));
+
+                    if (mCurrentPath.equals(Config.ROOT_PATH)) {
+                        for (SambaInfo sambaInfo : sambaInfoList) {
+                            if (sambaInfo.build().equals(mImageFileList.get(position).getPath())) {
+                                currentSambaInfo = sambaInfo;
+                                break;
+                            }
+                        }
+
+                    }
                     mCurrentPath = mImageFileList.get(position).getPath();
+
                     updateFileGrid();
                     gridView.smoothScrollToPosition(0);
                     gridView.setSelection(0);
@@ -231,20 +244,34 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         Log.d(TAG, "onStart");
 
         // reload config
-        String serverPath = sambaInfo.build();
+        String serverPath = currentSambaInfo.build();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        sambaInfo.server = sharedPreferences.getString(Config.SAMBA_SERVER, "");
-        sambaInfo.folder = sharedPreferences.getString(Config.SAMBA_FOLDER, "");
-        sambaInfo.username = sharedPreferences.getString(Config.SAMBA_USERNAME, "");
-        sambaInfo.password = sharedPreferences.getString(Config.SAMBA_PASSWORD, "");
 
-        smbAuth = new NtlmPasswordAuthentication("", sambaInfo.username, sambaInfo.password);
+        String servers = sharedPreferences.getString(Config.SERVERS, "");
+        try {
+            JSONObject jsonServers = new JSONObject(servers);
+
+            JSONArray jsonArray = jsonServers.getJSONArray("server");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = (JSONObject) jsonArray.get(i);
+                if (currentSambaInfo.id == jsonObject.getInt("id")) {
+                    currentSambaInfo = new SambaInfo(jsonObject);
+                    break;
+                }
+                if (i == jsonArray.length() - 1) {
+                    currentSambaInfo = new SambaInfo();
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         rotateType = RotateType.build(sharedPreferences.getString(Config.ROTATE_TYPE, "2"));
 
         isFileExplorerMode = sharedPreferences.getBoolean(Config.FILE_EXPLORER_MODE, false);
         isShowHidingFiles = sharedPreferences.getBoolean(Config.SHOW_HIDING_FILES, false);
 
-        if (!serverPath.equals(sambaInfo.build())) {
+        if (!serverPath.equals(currentSambaInfo.build())) {
             mCurrentPath = Config.ROOT_PATH;
         }
 
@@ -386,6 +413,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             @Override
             public void run() {
 
+                // add local directory
                 String localRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
 
                 File root = new File(localRoot);
@@ -393,15 +421,36 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     mImageFileList.add(new ImageFile(root));
                 }
 
-                try {
-                    SmbFile f = new SmbFile(sambaInfo.build(), smbAuth);
-                    if (f.canRead()) {
-                        if (f.isDirectory() || f.isFile() && Utils.isImage(f.getName())) {
-                            mImageFileList.add(new ImageFile(f));
+                // add samba directories
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                String servers = sharedPreferences.getString(Config.SERVERS, "");
+                if (servers != null && !servers.isEmpty()) {
+
+                    try {
+                        JSONObject jsonServers = new JSONObject(servers);
+                        JSONArray jsonArray = jsonServers.getJSONArray("server");
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            JSONObject jsonObject = (JSONObject) jsonArray.get(i);
+
+                            SambaInfo samba = new SambaInfo(jsonObject);
+
+                            try {
+                                SmbFile f = new SmbFile(samba.build(), samba.auth());
+                                if (f.canRead()) {
+                                    if (f.isDirectory() || f.isFile() && Utils.isImage(f.getName())) {
+                                        mImageFileList.add(new ImageFile(f));
+                                        sambaInfoList.add(samba);
+                                        notifyListChanged();
+                                    }
+                                }
+                            } catch (MalformedURLException | SmbException e) {
+                                e.printStackTrace();
+                            }
                         }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                } catch (MalformedURLException | SmbException e) {
-                    e.printStackTrace();
                 }
 
                 notifyListChanged();
@@ -425,7 +474,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             public void run() {
 
                 try {
-                    ImageFile root = new ImageFile(path, smbAuth);
+                    ImageFile root = new ImageFile(path, currentSambaInfo.auth());
 
                     if (root.exists() && root.isDirectory()) {
                         ImageFile[] files = root.listFiles();
