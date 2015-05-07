@@ -69,7 +69,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private ArrayList<ImageFile> mImageList = new ArrayList<>();
     private GridAdapter gridAdapter;
     private ArrayDeque<PathInfo> mPathStack = new ArrayDeque<>();
-    private String mCurrentPath = "";
+    private String mCurrentPath = Config.ROOT_PATH;
     private JazzyViewPager mViewPager;
     private android.view.GestureDetector mClickDetector;
     private RotateGestureDetector mRotationDetector;
@@ -373,6 +373,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         mViewPager.getAdapter().notifyDataSetChanged();
 
         if (mCurrentPath.equals(Config.ROOT_PATH)) {
+            emptyText.setVisibility(View.GONE);
             loadRootDir();
         } else {
             loadDir(mCurrentPath);
