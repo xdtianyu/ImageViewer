@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
 import android.os.Handler;
 import android.util.Log;
@@ -48,6 +49,9 @@ public class GridAdapter extends BaseAdapter {
 
     private Handler handler;
 
+    private Drawable fileDrawable;
+    private Drawable folderDrawable;
+
     public GridAdapter(Context c, ArrayList<ImageFile> list) {
         mContext = c;
         mImageList = list;
@@ -59,6 +63,9 @@ public class GridAdapter extends BaseAdapter {
         }
         handler = new Handler();
         mThumbnailList = new ArrayList<>();
+
+        fileDrawable = mContext.getDrawable(R.mipmap.file);
+        folderDrawable = mContext.getDrawable(R.mipmap.folder);
     }
 
     @Override
@@ -101,9 +108,9 @@ public class GridAdapter extends BaseAdapter {
                 viewHolder.title.setText(file.getName());
                 viewHolder.thumbnail.setTag(file.getName());
                 if (file.isDirectory()) {
-                    viewHolder.thumbnail.setImageResource(R.mipmap.folder);
+                    viewHolder.thumbnail.setImageDrawable(folderDrawable);
                 } else {
-                    viewHolder.thumbnail.setImageResource(R.mipmap.picture);
+                    viewHolder.thumbnail.setImageDrawable(fileDrawable);
 
                     mThumbnailList.add(file.getName());
                     updateThumbnail(viewHolder.thumbnail, position);

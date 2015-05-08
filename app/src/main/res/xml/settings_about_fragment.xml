@@ -8,4 +8,8 @@
         android:key="license"
         android:summary=""
         android:title="@string/license"/>
+    <Preference
+        android:key="version"
+        android:summary=""
+        android:title="@string/version"/>
 </PreferenceScreen>

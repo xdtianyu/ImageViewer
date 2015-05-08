@@ -42,6 +42,8 @@
     <string name="action_save">Save</string>
     <string name="windows_share_name">Server name:</string>
     <string name="windows_share_name_hint">My samba share</string>
+    <string name="remove">Remove</string>
+    <string name="version">Version</string>
     <string-array name="image_rotate_entries">
         <item>@string/image_original</item>
         <item>@string/image_fit_screen</item>

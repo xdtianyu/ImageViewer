@@ -9,5 +9,5 @@
         android:layout_height="wrap_content"
         android:textColor="@android:color/holo_red_light"
         android:id="@+id/remove"
-        android:text="Remove"/>
+        android:text="@string/remove"/>
 </LinearLayout>

@@ -29,4 +29,6 @@
     <string name="windows_share_name">名称:</string>
     <string name="windows_share_name_hint">我的网络共享</string>
     <string name="added_shared_folder">已添加的网络共享</string>
+    <string name="remove">删除</string>
+    <string name="version">版本</string>
 </resources>

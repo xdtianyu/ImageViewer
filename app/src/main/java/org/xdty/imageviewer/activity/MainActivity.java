@@ -107,7 +107,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         gridView.setAdapter(gridAdapter);
 
         mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
-        mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
         mViewPager.setOnPageChangeListener(MainActivity.this);
         mViewPager.setOffscreenPageLimit(2);
         mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Standard);
@@ -212,6 +211,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 } else {
                     mGridPosition = position;
 
+                    mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
+
                     mViewPager.setCurrentItem(mImageList.indexOf(mImageFileList.get(position)), false);
                     Log.d(TAG, "setCurrentItem:" + position);
                     mViewPager.setVisibility(View.VISIBLE);
@@ -311,12 +312,13 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             }
             showSystemUI();
-            System.gc();
 
             if (updateGridOnBack) {
                 updateFileGrid();
                 updateGridOnBack = false;
             }
+
+            mViewPager.setAdapter(null);
 
         } else if (mPathStack.size() > 0) {
             PathInfo pathInfo = mPathStack.pop();
@@ -397,7 +399,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         mImageList.clear();
         rotationMap.clear();
         orientationMap.clear();
-        mViewPager.getAdapter().notifyDataSetChanged();
+        if (mViewPager.getAdapter() != null) {
+            mViewPager.getAdapter().notifyDataSetChanged();
+        }
 
         if (mCurrentPath.equals(Config.ROOT_PATH)) {
             emptyText.setVisibility(View.GONE);
@@ -546,31 +550,32 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 InputStream inputStream = null;
                 try {
                     inputStream = file.getInputStream();
-                    final Bitmap tmpBitmap = BitmapFactory.decodeStream(inputStream);
+
+                    final Bitmap originBitmap = BitmapFactory.decodeStream(inputStream);
                     final Bitmap bitmap;
 
                     switch (rotateType) {
                         case ROTATE_SCREEN_FIT_IMAGE:
                             // rotate screen to fit image
-                            if (tmpBitmap.getHeight() > tmpBitmap.getWidth()) {
+                            if (originBitmap.getHeight() > originBitmap.getWidth()) {
                                 // save status to orientationMap
                                 orientationMap.put(position, true);
                             } else {
                                 orientationMap.put(position, false);
                             }
-                            bitmap = tmpBitmap;
+                            bitmap = null;
                             break;
                         case ROTATE_IMAGE_FIT_SCREEN:
                             // rotate image to fit screen
-                            if (tmpBitmap.getHeight() > tmpBitmap.getWidth()) {
-                                bitmap = RotateBitmap(tmpBitmap, -90);
-                                tmpBitmap.recycle();
+                            if (originBitmap.getHeight() > originBitmap.getWidth()) {
+                                bitmap = RotateBitmap(originBitmap, -90);
+                                originBitmap.recycle();
                             } else {
-                                bitmap = tmpBitmap;
+                                bitmap = null;
                             }
                             break;
                         default:
-                            bitmap = tmpBitmap;
+                            bitmap = null;
                     }
 
 //                    ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -603,7 +608,11 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                                 if (file.isGif()) {
                                     imageViewer.setImageDrawable(gifFromStream);
                                 } else {
-                                    imageViewer.setImageBitmap(bitmap);
+                                    if (bitmap != null) {
+                                        imageViewer.setImageBitmap(bitmap);
+                                    } else {
+                                        imageViewer.setImageBitmap(originBitmap);
+                                    }
                                 }
 
                                 Log.d(TAG, "set image bitmap: " + position);
@@ -620,7 +629,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                                 if (gifFromStream != null) {
                                     gifFromStream.recycle();
                                 }
-                                bitmap.recycle();
+                                if (bitmap != null) {
+                                    bitmap.recycle();
+                                }
                             }
                         }
                     });
@@ -638,7 +649,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (mViewPager != null) {
+                if (mViewPager != null && mViewPager.getAdapter() != null) {
                     mViewPager.getAdapter().notifyDataSetChanged();
                 }
                 gridAdapter.clearThumbnailList();
@@ -777,6 +788,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
             PhotoView photoView = (PhotoView) ((View) object).findViewWithTag(position);
+            Log.d(TAG, "destroyItem");
 
             // release memory
             if (photoView != null) {
@@ -785,6 +797,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     Log.d(TAG, "photoView is GifDrawable");
                     GifDrawable gifDrawable = (GifDrawable) photoView.getDrawable();
                     gifDrawable.recycle();
+
                 } else {
                     Log.d(TAG, "photoView is BitmapDrawable");
                     BitmapDrawable bitmapDrawable = (BitmapDrawable) photoView.getDrawable();
@@ -798,7 +811,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             container.removeView((View) object);
             unbindDrawables((View) object);
             object = null;
-            System.gc();
         }
 
         @Override
