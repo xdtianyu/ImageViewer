@@ -44,7 +44,6 @@ import org.xdty.imageviewer.view.JazzyViewPager;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.util.ArrayDeque;
@@ -560,19 +559,27 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     }
 
                     Log.d(TAG, "start lock: " + position);
-                    InputStream inputStream = null;
-
-                    inputStream = file.getInputStream();
 
                     BitmapFactory.Options options = new BitmapFactory.Options();
+
+                    options.inJustDecodeBounds = true;
+                    BitmapFactory.decodeStream(file.getInputStream(), null, options);
+
+                    int imageHeight = options.outHeight;
+                    int imageWidth = options.outWidth;
+
+                    options.inJustDecodeBounds = false;
+
                     if (!isHighQuality && !isFirstImageViewer) {
                         options.inPreferredConfig = Bitmap.Config.RGB_565;
+                        options.inSampleSize = 2;
+                    } else if (imageHeight > 2048 || imageWidth > 2048) {
                         options.inSampleSize = 2;
                     }
 
                     isFirstImageViewer = false;
 
-                    final Bitmap originBitmap = BitmapFactory.decodeStream(inputStream, null, options);
+                    final Bitmap originBitmap = BitmapFactory.decodeStream(file.getInputStream(), null, options);
                     final Bitmap bitmap;
 
                     switch (rotateType) {
