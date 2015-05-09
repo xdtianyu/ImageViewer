@@ -308,6 +308,7 @@ public class PhotoViewAttacher implements IPhotoView, View.OnTouchListener,
             cleanup();
             LogManager.getLogger().i(LOG_TAG,
                     "ImageView no longer exists. You should not use this PhotoViewAttacher any more.");
+            throw new RuntimeException("ImageView no longer exists. You should not use this PhotoViewAttacher any more.");
         }
 
         return imageView;

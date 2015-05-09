@@ -545,13 +545,25 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     }
                 }
 
-                imageLoadLock.lock();
-                Log.d(TAG, "start lock: " + position);
-                InputStream inputStream = null;
                 try {
+
+                    imageLoadLock.lock();
+
+                    if (imageViewWeakReference.get() == null) {
+                        imageLoadLock.unlock();
+                        return;
+                    }
+
+                    Log.d(TAG, "start lock: " + position);
+                    InputStream inputStream = null;
+
                     inputStream = file.getInputStream();
 
-                    final Bitmap originBitmap = BitmapFactory.decodeStream(inputStream);
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+//                    options.inPreferredConfig = Bitmap.Config.RGB_565;
+//                    options.inSampleSize = 2;
+
+                    final Bitmap originBitmap = BitmapFactory.decodeStream(inputStream, null, options);
                     final Bitmap bitmap;
 
                     switch (rotateType) {
@@ -603,15 +615,28 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
                             ImageView imageViewer = imageViewWeakReference.get();
 
-                            if (imageViewer != null) {
+                            if (imageViewer != null && mViewPager.getVisibility() == View.VISIBLE) {
                                 //imageViewer.setImageBitmap(compressed);
-                                if (file.isGif()) {
-                                    imageViewer.setImageDrawable(gifFromStream);
-                                } else {
-                                    if (bitmap != null) {
-                                        imageViewer.setImageBitmap(bitmap);
+                                try {
+                                    if (file.isGif()) {
+                                        imageViewer.setImageDrawable(gifFromStream);
                                     } else {
-                                        imageViewer.setImageBitmap(originBitmap);
+                                        if (bitmap != null) {
+                                            imageViewer.setImageBitmap(bitmap);
+                                        } else {
+                                            imageViewer.setImageBitmap(originBitmap);
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    if (gifFromStream != null) {
+                                        gifFromStream.recycle();
+                                    }
+                                    if (bitmap != null) {
+                                        bitmap.recycle();
+                                    }
+                                    if (originBitmap != null) {
+                                        originBitmap.recycle();
                                     }
                                 }
 
@@ -631,6 +656,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                                 }
                                 if (bitmap != null) {
                                     bitmap.recycle();
+                                }
+                                if (originBitmap != null) {
+                                    originBitmap.recycle();
                                 }
                             }
                         }
@@ -794,15 +822,15 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             if (photoView != null) {
 
                 if (photoView.getDrawable() instanceof GifDrawable) {
-                    Log.d(TAG, "photoView is GifDrawable");
                     GifDrawable gifDrawable = (GifDrawable) photoView.getDrawable();
                     gifDrawable.recycle();
+                    gifDrawable.setCallback(null);
 
                 } else {
-                    Log.d(TAG, "photoView is BitmapDrawable");
                     BitmapDrawable bitmapDrawable = (BitmapDrawable) photoView.getDrawable();
                     if (bitmapDrawable != null) {
                         bitmapDrawable.getBitmap().recycle();
+                        bitmapDrawable.setCallback(null);
                     }
                 }
                 photoView.setImageDrawable(null);

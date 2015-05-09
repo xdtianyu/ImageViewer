@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.ThumbnailUtils;
 import android.os.Handler;
 import android.util.Log;
@@ -49,8 +49,8 @@ public class GridAdapter extends BaseAdapter {
 
     private Handler handler;
 
-    private Drawable fileDrawable;
-    private Drawable folderDrawable;
+    private Bitmap pictureBitmap;
+    private Bitmap folderBitmap;
 
     public GridAdapter(Context c, ArrayList<ImageFile> list) {
         mContext = c;
@@ -64,8 +64,8 @@ public class GridAdapter extends BaseAdapter {
         handler = new Handler();
         mThumbnailList = new ArrayList<>();
 
-        fileDrawable = mContext.getDrawable(R.mipmap.file);
-        folderDrawable = mContext.getDrawable(R.mipmap.folder);
+        pictureBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.mipmap.picture);
+        folderBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.mipmap.folder);
     }
 
     @Override
@@ -102,15 +102,21 @@ public class GridAdapter extends BaseAdapter {
             mThumbnailList.remove(name);
         }
 
-        if (mImageList.get(position)!=null) {
+        if (mImageList.size() > position && mImageList.get(position) != null) {
             try {
                 ImageFile file = mImageList.get(position);
                 viewHolder.title.setText(file.getName());
                 viewHolder.thumbnail.setTag(file.getName());
+
+                BitmapDrawable bitmapDrawable = (BitmapDrawable) viewHolder.thumbnail.getDrawable();
+                if (bitmapDrawable != null && bitmapDrawable.getBitmap() != pictureBitmap && bitmapDrawable.getBitmap() != folderBitmap) {
+                    bitmapDrawable.getBitmap().recycle();
+                }
+
                 if (file.isDirectory()) {
-                    viewHolder.thumbnail.setImageDrawable(folderDrawable);
+                    viewHolder.thumbnail.setImageBitmap(folderBitmap);
                 } else {
-                    viewHolder.thumbnail.setImageDrawable(fileDrawable);
+                    viewHolder.thumbnail.setImageBitmap(pictureBitmap);
 
                     mThumbnailList.add(file.getName());
                     updateThumbnail(viewHolder.thumbnail, position);
@@ -133,7 +139,7 @@ public class GridAdapter extends BaseAdapter {
             @Override
             public void run() {
 
-                if (mImageList.size() < position) {
+                if (mImageList.size() <= position) {
                     return;
                 }
                 // get file's md5 and check if thumbnail exist
@@ -157,6 +163,11 @@ public class GridAdapter extends BaseAdapter {
                             @Override
                             public void run() {
                                 if (mImageList.size() > position && mImageList.get(position).getName().equals(imageView.getTag())) {
+                                    BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
+
+                                    if (bitmapDrawable.getBitmap() != pictureBitmap && bitmapDrawable.getBitmap() != folderBitmap) {
+                                        bitmapDrawable.getBitmap().recycle();
+                                    }
                                     imageView.setImageBitmap(bitmap);
                                 }
                             }
@@ -174,12 +185,13 @@ public class GridAdapter extends BaseAdapter {
                         return;
                     }
 
-                    // generate set thumbnail
+                    // generate and set thumbnail
                     try {
                         Bitmap tmpBitmap = BitmapFactory.decodeStream(mImageList.get(position).getInputStream());
                         final Bitmap bitmap = ThumbnailUtils.extractThumbnail(tmpBitmap, imageView.getWidth(), imageView.getHeight());
                         tmpBitmap.recycle();
                         if (f.createNewFile()) {
+                            // save thumbnail to cache
                             FileOutputStream out = new FileOutputStream(f);
                             bitmap.compress(CompressFormat.JPEG, 90, out);
                             out.flush();
@@ -188,6 +200,10 @@ public class GridAdapter extends BaseAdapter {
                                 @Override
                                 public void run() {
                                     if (mImageList.size() > position && mImageList.get(position).getName().equals(imageView.getTag())) {
+                                        BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
+                                        if (bitmapDrawable.getBitmap() != pictureBitmap && bitmapDrawable.getBitmap() != folderBitmap) {
+                                            bitmapDrawable.getBitmap().recycle();
+                                        }
                                         imageView.setImageBitmap(bitmap);
                                     }
                                 }
