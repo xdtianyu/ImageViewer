@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.media.ThumbnailUtils;
 import android.os.Handler;
 import android.util.Log;
@@ -108,18 +107,14 @@ public class GridAdapter extends BaseAdapter {
                 viewHolder.title.setText(file.getName());
                 viewHolder.thumbnail.setTag(file.getName());
 
-                BitmapDrawable bitmapDrawable = (BitmapDrawable) viewHolder.thumbnail.getDrawable();
-                if (bitmapDrawable != null && bitmapDrawable.getBitmap() != pictureBitmap && bitmapDrawable.getBitmap() != folderBitmap) {
-                    bitmapDrawable.getBitmap().recycle();
-                }
+//                BitmapDrawable bitmapDrawable = (BitmapDrawable) viewHolder.thumbnail.getDrawable();
+//                if (bitmapDrawable != null && bitmapDrawable.getBitmap() != pictureBitmap && bitmapDrawable.getBitmap() != folderBitmap) {
+//                    bitmapDrawable.getBitmap().recycle();
+//                }
 
                 mThumbnailList.add(file.getName());
-                updateThumbnail(viewHolder.thumbnail, position);
-
-                if (file.canRead() && file.canWrite()) {
-                    viewHolder.lock.setVisibility(View.GONE);
-                }
-            } catch (SmbException | IndexOutOfBoundsException e) {
+                updateThumbnail(viewHolder.thumbnail, viewHolder.lock, position);
+            } catch (IndexOutOfBoundsException e) {
                 e.printStackTrace();
             }
         }
@@ -128,7 +123,7 @@ public class GridAdapter extends BaseAdapter {
     }
 
     // generate samba file md5 and thumbnail
-    private void updateThumbnail(final ImageView imageView, final int position) {
+    private void updateThumbnail(final ImageView imageView, final ImageView lock, final int position) {
 
         new Thread(new Runnable() {
             @Override
@@ -141,7 +136,17 @@ public class GridAdapter extends BaseAdapter {
                 ImageFile imageFile = mImageList.get(position);
 
                 final boolean isDirectory = imageFile.isDirectory();
+                boolean isLocked = true;
 
+                try {
+                    if (imageFile.canRead() && imageFile.canWrite()) {
+                        isLocked = false;
+                    }
+                } catch (SmbException e) {
+                    e.printStackTrace();
+                }
+
+                final int visibility = isLocked?View.VISIBLE:View.GONE;
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -150,26 +155,9 @@ public class GridAdapter extends BaseAdapter {
                         } else {
                             imageView.setImageBitmap(pictureBitmap);
                         }
+                        lock.setVisibility(visibility);
                     }
                 });
-
-                // generate folder thumbnail
-                if (isDirectory) {
-                    try {
-                        for (ImageFile file : imageFile.listFiles()) {
-                            if (file.isImage()) {
-                                imageFile = file;
-                                break;
-                            }
-                        }
-                    } catch (SmbException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                if (imageFile.isDirectory()) {
-                    return;
-                }
 
                 // get file's md5 and check if thumbnail exist
                 String md5 = Utils.md5(imageFile);
@@ -192,11 +180,11 @@ public class GridAdapter extends BaseAdapter {
                             @Override
                             public void run() {
                                 if (mImageList.size() > position && mImageList.get(position).getName().equals(imageView.getTag())) {
-                                    BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
-
-                                    if (bitmapDrawable.getBitmap() != pictureBitmap && bitmapDrawable.getBitmap() != folderBitmap) {
-                                        bitmapDrawable.getBitmap().recycle();
-                                    }
+//                                    BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
+//
+//                                    if (bitmapDrawable.getBitmap() != pictureBitmap && bitmapDrawable.getBitmap() != folderBitmap) {
+//                                        bitmapDrawable.getBitmap().recycle();
+//                                    }
                                     imageView.setImageBitmap(bitmap);
                                 }
                             }
@@ -208,8 +196,29 @@ public class GridAdapter extends BaseAdapter {
                     }
                 } else {
                     loadingLock.lock();
+
                     // check if is scroll out
                     if (mImageList.size() > position && !mThumbnailList.contains(mImageList.get(position).getName())) {
+                        loadingLock.unlock();
+                        return;
+                    }
+
+                    // generate folder thumbnail
+                    if (isDirectory) {
+                        try {
+                            for (ImageFile file : imageFile.listFiles()) {
+                                if (file.isImage()) {
+                                    imageFile = file;
+                                    break;
+                                }
+                            }
+                        } catch (SmbException e) {
+                            e.printStackTrace();
+                            loadingLock.unlock();
+                        }
+                    }
+                    // no image found, just return
+                    if (isDirectory && imageFile.isDirectory()) {
                         loadingLock.unlock();
                         return;
                     }
@@ -219,7 +228,7 @@ public class GridAdapter extends BaseAdapter {
                         Bitmap tmpBitmap = BitmapFactory.decodeStream(imageFile.getInputStream());
                         if (tmpBitmap != null) {
                             final Bitmap bitmap = ThumbnailUtils.extractThumbnail(tmpBitmap, imageView.getWidth(), imageView.getHeight());
-                            tmpBitmap.recycle();
+//                            tmpBitmap.recycle();
                             if (f.createNewFile()) {
                                 // save thumbnail to cache
                                 FileOutputStream out = new FileOutputStream(f);
@@ -230,10 +239,10 @@ public class GridAdapter extends BaseAdapter {
                                     @Override
                                     public void run() {
                                         if (mImageList.size() > position && mImageList.get(position).getName().equals(imageView.getTag())) {
-                                            BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
-                                            if (bitmapDrawable.getBitmap() != pictureBitmap && bitmapDrawable.getBitmap() != folderBitmap) {
-                                                bitmapDrawable.getBitmap().recycle();
-                                            }
+//                                            BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
+//                                            if (bitmapDrawable.getBitmap() != pictureBitmap && bitmapDrawable.getBitmap() != folderBitmap) {
+//                                                bitmapDrawable.getBitmap().recycle();
+//                                            }
                                             imageView.setImageBitmap(bitmap);
                                         }
                                     }
