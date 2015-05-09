@@ -120,7 +120,7 @@ public class Utils {
         double scaleHeight = height / (reqHeight * 1.0);
         double scaleWidth = width / (reqWidth * 1.0);
 
-        return (int)Math.floor(scaleHeight < scaleWidth ? scaleHeight : scaleWidth);
+        return (int) Math.floor(scaleHeight < scaleWidth ? scaleHeight : scaleWidth);
     }
 
 }

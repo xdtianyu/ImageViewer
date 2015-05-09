@@ -88,9 +88,10 @@ public class NetworkShareFragment extends PreferenceFragment {
                 @Override
                 public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                     Object object = listView.getAdapter().getItem(position);
-                    if (object instanceof Preference) {
-                        String title = ((Preference) object).getTitle().toString();
 
+                    if (object instanceof PreferenceScreen) {
+                        return false;
+                    } else if (object instanceof Preference) {
                         if (popupWindow.isShowing()) {
                             popupWindow.dismiss();
                         }

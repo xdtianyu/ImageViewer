@@ -98,8 +98,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_main);
 
-        System.setProperty("jcifs.smb.client.responseTimeout", "3000");
-        System.setProperty("jcifs.smb.client.soTimeout", "2000");
+        System.setProperty("jcifs.smb.client.responseTimeout", "10000");
+        System.setProperty("jcifs.smb.client.soTimeout", "10000");
 
         excludeList.add("Android");
         excludeList.add("storage");
@@ -585,12 +585,12 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         // resize image to accepted size
                         Bitmap tmpBitmap = BitmapFactory.decodeStream(file.getInputStream());
 
-                        double heightScale = Config.MAX_IMAGE_SIZE/(imageHeight*1.0);
-                        double widthScale = Config.MAX_IMAGE_SIZE/(imageWidth*1.0);
+                        double heightScale = Config.MAX_IMAGE_SIZE / (imageHeight * 1.0);
+                        double widthScale = Config.MAX_IMAGE_SIZE / (imageWidth * 1.0);
 
-                        double scale = heightScale<widthScale?heightScale:widthScale;
+                        double scale = heightScale < widthScale ? heightScale : widthScale;
                         //originBitmap = ThumbnailUtils.extractThumbnail(tmpBitmap, (int)(imageWidth*scale),(int)(imageHeight*scale));
-                        originBitmap = Bitmap.createScaledBitmap(tmpBitmap, (int)(imageWidth*scale),(int)(imageHeight*scale), true);
+                        originBitmap = Bitmap.createScaledBitmap(tmpBitmap, (int) (imageWidth * scale), (int) (imageHeight * scale), true);
                         tmpBitmap.recycle();
                     } else {
                         originBitmap = BitmapFactory.decodeStream(file.getInputStream());
