@@ -49,13 +49,13 @@
         <item>@string/image_fit_screen</item>
         <item>@string/screen_fit_image</item>
     </string-array>
-    <string-array name="image_rotate_values">
+    <string-array name="image_rotate_values" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
     </string-array>
 
-    <string-array name="jazzy_effects">
+    <string-array name="jazzy_effects" translatable="false">
         <item>Standard</item>
         <item>Tablet</item>
         <item>CubeIn</item>
