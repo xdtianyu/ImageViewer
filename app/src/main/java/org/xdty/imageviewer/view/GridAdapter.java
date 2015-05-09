@@ -117,10 +117,11 @@ public class GridAdapter extends BaseAdapter {
                     viewHolder.thumbnail.setImageBitmap(folderBitmap);
                 } else {
                     viewHolder.thumbnail.setImageBitmap(pictureBitmap);
-
-                    mThumbnailList.add(file.getName());
-                    updateThumbnail(viewHolder.thumbnail, position);
                 }
+
+                mThumbnailList.add(file.getName());
+                updateThumbnail(viewHolder.thumbnail, position);
+
                 if (file.canRead() && file.canWrite()) {
                     viewHolder.lock.setVisibility(View.GONE);
                 }
@@ -142,8 +143,29 @@ public class GridAdapter extends BaseAdapter {
                 if (mImageList.size() <= position) {
                     return;
                 }
+
+                ImageFile imageFile = mImageList.get(position);
+
+                // generate folder thumbnail
+                if (imageFile.isDirectory()) {
+                    try {
+                        for (ImageFile file:imageFile.listFiles()) {
+                            if (file.isImage()) {
+                                imageFile = file;
+                                break;
+                            }
+                        }
+                    } catch (SmbException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if (imageFile.isDirectory()) {
+                    return;
+                }
+
                 // get file's md5 and check if thumbnail exist
-                String md5 = Utils.md5(mImageList.get(position));
+                String md5 = Utils.md5(imageFile);
                 File f = new File(mCacheDir, md5);
 
                 if (f.exists()) {
@@ -187,7 +209,7 @@ public class GridAdapter extends BaseAdapter {
 
                     // generate and set thumbnail
                     try {
-                        Bitmap tmpBitmap = BitmapFactory.decodeStream(mImageList.get(position).getInputStream());
+                        Bitmap tmpBitmap = BitmapFactory.decodeStream(imageFile.getInputStream());
                         final Bitmap bitmap = ThumbnailUtils.extractThumbnail(tmpBitmap, imageView.getWidth(), imageView.getHeight());
                         tmpBitmap.recycle();
                         if (f.createNewFile()) {
