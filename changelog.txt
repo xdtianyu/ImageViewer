@@ -1,3 +1,16 @@
+version 1.3.0 (2015-05-09)
+
+1. Add gif support
+2. Add file explorer mode
+3. Fix crashes and memory leaks
+4. Fix auto hide system ui
+5. Add show hiding files setting
+6. Add multi sambar server support
+7. Optimize large image draging
+8. Add folder thumbnail support
+9. Optimize thumbnail
+10. Add licenses
+
 version 1.2.0 (2015-05-02)
 
 1. Add local image support
