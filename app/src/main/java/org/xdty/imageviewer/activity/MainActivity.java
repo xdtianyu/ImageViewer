@@ -90,6 +90,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private boolean isMenuOpened = false;
     private boolean updateGridOnBack = false;
     private ArrayList<SambaInfo> sambaInfoList = new ArrayList<>();
+    private boolean isFirstImageViewer = true;
+    private int lastPagePosition = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -319,6 +321,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             }
 
             mViewPager.setAdapter(null);
+            isFirstImageViewer = true;
+            lastPagePosition = -1;
 
         } else if (mPathStack.size() > 0) {
             PathInfo pathInfo = mPathStack.pop();
@@ -529,7 +533,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     }
 
-    private void loadImage(final ImageFile file, final ImageView imageView, final int position) {
+    private void loadImage(final ImageFile file, final ImageView imageView, final int position,
+                           final boolean isHighQuality, final boolean autoRotate) {
 
         final WeakReference<ImageView> imageViewWeakReference = new WeakReference<>(imageView);
 
@@ -560,8 +565,12 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     inputStream = file.getInputStream();
 
                     BitmapFactory.Options options = new BitmapFactory.Options();
-//                    options.inPreferredConfig = Bitmap.Config.RGB_565;
-//                    options.inSampleSize = 2;
+                    if (!isHighQuality && !isFirstImageViewer) {
+                        options.inPreferredConfig = Bitmap.Config.RGB_565;
+                        options.inSampleSize = 2;
+                    }
+
+                    isFirstImageViewer = false;
 
                     final Bitmap originBitmap = BitmapFactory.decodeStream(inputStream, null, options);
                     final Bitmap bitmap;
@@ -643,11 +652,13 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                                 Log.d(TAG, "set image bitmap: " + position);
                                 int orientation = getRequestedOrientation();
 
-                                if (mViewPager != null && position == mViewPager.getCurrentItem() && rotateType == RotateType.ROTATE_SCREEN_FIT_IMAGE) {
-                                    if (orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-                                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                                    } else if (!orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-                                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                                if (autoRotate) {
+                                    if (mViewPager != null && position == mViewPager.getCurrentItem() && rotateType == RotateType.ROTATE_SCREEN_FIT_IMAGE) {
+                                        if (orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                                            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                                        } else if (!orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                                            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                                        }
                                     }
                                 }
                             } else {
@@ -688,7 +699,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-        //Log.d(TAG, "onPageScrolled:" +position);
+        Log.d(TAG, "onPageScrolled:" + position);
     }
 
     @Override
@@ -699,6 +710,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     @Override
     public void onPageScrollStateChanged(int state) {
+        Log.d(TAG, "onPageScrollStateChanged:" + state);
         // rotate screen to fit image size
         if (state == ViewPager.SCROLL_STATE_IDLE) {
             final int position = mViewPager.getCurrentItem();
@@ -716,6 +728,20 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     }
                 }
             }, 10);
+
+            // reload high quality image
+            PhotoView photoView = (PhotoView) mViewPager.findViewWithTag(position);
+            if (!mImageList.get(position).isGif()) {
+                loadImage(mImageList.get(position), photoView, position, true, false);
+            }
+
+            if (lastPagePosition != -1 && lastPagePosition != position) {
+                if (!mImageList.get(lastPagePosition).isGif()) {
+                    loadImage(mImageList.get(lastPagePosition),
+                            (PhotoView) mViewPager.findViewWithTag(lastPagePosition), lastPagePosition, false, false);
+                }
+            }
+            lastPagePosition = position;
         }
     }
 
@@ -765,15 +791,15 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     private class ViewPagerAdapter extends PagerAdapter {
 
-        private ArrayList<ImageFile> fileList;
+        private ArrayList<ImageFile> imageList;
 
         public ViewPagerAdapter(ArrayList<ImageFile> files) {
-            fileList = files;
+            imageList = files;
         }
 
         @Override
         public int getCount() {
-            return fileList.size();
+            return imageList.size();
         }
 
         @Override
@@ -806,7 +832,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
             Log.d(TAG, "getCurrentItem:" + mViewPager.getCurrentItem());
             Log.d(TAG, "loadImage: " + position);
-            loadImage(fileList.get(position), photoView, position);
+            loadImage(imageList.get(position), photoView, position, false, true);
             container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             mViewPager.setObjectForPosition(photoView, position);
 
