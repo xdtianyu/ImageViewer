@@ -149,7 +149,7 @@ public class GridAdapter extends BaseAdapter {
                 // generate folder thumbnail
                 if (imageFile.isDirectory()) {
                     try {
-                        for (ImageFile file:imageFile.listFiles()) {
+                        for (ImageFile file : imageFile.listFiles()) {
                             if (file.isImage()) {
                                 imageFile = file;
                                 break;
@@ -210,26 +210,28 @@ public class GridAdapter extends BaseAdapter {
                     // generate and set thumbnail
                     try {
                         Bitmap tmpBitmap = BitmapFactory.decodeStream(imageFile.getInputStream());
-                        final Bitmap bitmap = ThumbnailUtils.extractThumbnail(tmpBitmap, imageView.getWidth(), imageView.getHeight());
-                        tmpBitmap.recycle();
-                        if (f.createNewFile()) {
-                            // save thumbnail to cache
-                            FileOutputStream out = new FileOutputStream(f);
-                            bitmap.compress(CompressFormat.JPEG, 90, out);
-                            out.flush();
-                            out.close();
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (mImageList.size() > position && mImageList.get(position).getName().equals(imageView.getTag())) {
-                                        BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
-                                        if (bitmapDrawable.getBitmap() != pictureBitmap && bitmapDrawable.getBitmap() != folderBitmap) {
-                                            bitmapDrawable.getBitmap().recycle();
+                        if (tmpBitmap != null) {
+                            final Bitmap bitmap = ThumbnailUtils.extractThumbnail(tmpBitmap, imageView.getWidth(), imageView.getHeight());
+                            tmpBitmap.recycle();
+                            if (f.createNewFile()) {
+                                // save thumbnail to cache
+                                FileOutputStream out = new FileOutputStream(f);
+                                bitmap.compress(CompressFormat.JPEG, 90, out);
+                                out.flush();
+                                out.close();
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (mImageList.size() > position && mImageList.get(position).getName().equals(imageView.getTag())) {
+                                            BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
+                                            if (bitmapDrawable.getBitmap() != pictureBitmap && bitmapDrawable.getBitmap() != folderBitmap) {
+                                                bitmapDrawable.getBitmap().recycle();
+                                            }
+                                            imageView.setImageBitmap(bitmap);
                                         }
-                                        imageView.setImageBitmap(bitmap);
                                     }
-                                }
-                            });
+                                });
+                            }
                         }
                     } catch (IllegalArgumentException | IOException | IndexOutOfBoundsException e) {
                         e.printStackTrace();
