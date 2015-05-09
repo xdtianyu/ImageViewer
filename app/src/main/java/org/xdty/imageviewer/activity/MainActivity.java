@@ -718,18 +718,18 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-        Log.d(TAG, "onPageScrolled:" + position);
+        //Log.d(TAG, "onPageScrolled:" + position);
     }
 
     @Override
     public void onPageSelected(int position) {
-        Log.d(TAG, "onPageSelected:" + position);
+        //Log.d(TAG, "onPageSelected:" + position);
         mGridPosition = mImageFileList.indexOf(mImageList.get(position));
     }
 
     @Override
     public void onPageScrollStateChanged(int state) {
-        Log.d(TAG, "onPageScrollStateChanged:" + state);
+        //Log.d(TAG, "onPageScrollStateChanged:" + state);
         // rotate screen to fit image size
         if (state == ViewPager.SCROLL_STATE_IDLE) {
             final int position = mViewPager.getCurrentItem();
