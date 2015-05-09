@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
-import android.media.ThumbnailUtils;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -164,7 +163,12 @@ public class GridAdapter extends BaseAdapter {
 
                     // check if is scroll out
                     if (mImageList.size() > position && !mThumbnailList.contains(mImageList.get(position).getName())) {
-                        thumbnailLock.unlock();
+                        if (thumbnailLock.isHeldByCurrentThread()) {
+                            thumbnailLock.unlock();
+                        } else {
+                            Log.e(TAG, "thumbnailLock is not held by current thread");
+                        }
+
                         return;
                     }
 
@@ -183,7 +187,12 @@ public class GridAdapter extends BaseAdapter {
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     } finally {
-                        thumbnailLock.unlock();
+                        if (thumbnailLock.isHeldByCurrentThread()) {
+                            thumbnailLock.unlock();
+                        } else {
+                            Log.e(TAG, "thumbnailLock unlock error");
+                        }
+
                     }
                 } else {
                     loadingLock.lock();
@@ -217,9 +226,9 @@ public class GridAdapter extends BaseAdapter {
 
                     // generate and set thumbnail
                     try {
-                        Bitmap tmpBitmap = BitmapFactory.decodeStream(imageFile.getInputStream());
-                        if (tmpBitmap != null) {
-                            final Bitmap bitmap = ThumbnailUtils.extractThumbnail(tmpBitmap, imageView.getWidth(), imageView.getHeight());
+                        final Bitmap bitmap = Utils.decodeSampledBitmapFromStream(imageFile,
+                                imageView.getWidth(), imageView.getHeight());
+                        if (bitmap != null) {
                             if (f.createNewFile()) {
                                 // save thumbnail to cache
                                 FileOutputStream out = new FileOutputStream(f);

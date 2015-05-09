@@ -21,5 +21,6 @@ public class Config {
 
     public final static int MAX_IMAGE_SIZE = 2048;
     public final static int IMAGE_SIMPLE_SIZE = 2;
+    public final static int IMAGE_THUMBNAIL_SIMPLE_SIZE = 3;
 
 }

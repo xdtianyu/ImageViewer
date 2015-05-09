@@ -552,12 +552,13 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     }
                 }
 
+                imageLoadLock.lock();
+
                 try {
-
-                    imageLoadLock.lock();
-
                     if (imageViewWeakReference.get() == null) {
-                        imageLoadLock.unlock();
+                        if (imageLoadLock.isHeldByCurrentThread()) {
+                            imageLoadLock.unlock();
+                        }
                         return;
                     }
 
@@ -700,7 +701,11 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     e.printStackTrace();
                 } finally {
                     Log.d(TAG, "release lock: " + position);
-                    imageLoadLock.unlock();
+                    if (imageLoadLock.isHeldByCurrentThread()) {
+                        imageLoadLock.unlock();
+                    } else {
+                        Log.e(TAG, "release imageLoadLock error");
+                    }
                 }
             }
         }).start();

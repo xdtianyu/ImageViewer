@@ -13,5 +13,5 @@
     <SwitchPreference
         android:title="@string/show_hiding_files"
         android:key="show_hiding_files"
-        android:defaultValue="false"/>
+        android:defaultValue="true"/>
 </PreferenceScreen>

@@ -12,7 +12,7 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:id="@+id/thumbnail"
-            android:scaleType="fitCenter"
+            android:scaleType="centerCrop"
             android:contentDescription="@string/image_item_description"/>
         <ImageView
             android:layout_width="wrap_content"

@@ -8,7 +8,7 @@ import android.util.TypedValue;
 
 import org.xdty.imageviewer.model.ImageFile;
 
-import java.io.InputStream;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -62,28 +62,30 @@ public class Utils {
         return md5(imageFile.getPath() + imageFile.getLastModified() + imageFile.getContentLength());
     }
 
-    public static String fillString(int count,char c) {
-        StringBuilder sb = new StringBuilder( count );
-        for( int i=0; i<count; i++ ) {
-            sb.append( c );
+    public static String fillString(int count, char c) {
+        StringBuilder sb = new StringBuilder(count);
+        for (int i = 0; i < count; i++) {
+            sb.append(c);
         }
         return sb.toString();
     }
 
-    public static Bitmap decodeSampledBitmapFromStream(InputStream inputStream,
-                                                         int reqWidth, int reqHeight) {
+    public static Bitmap decodeSampledBitmapFromStream(ImageFile imageFile,
+                                                       int reqWidth, int reqHeight) throws IOException {
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeStream(inputStream, null, options);
+        BitmapFactory.decodeStream(imageFile.getInputStream(), null, options);
 
         // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        //options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        options.inSampleSize = calculateLessInSampleSize(options, reqWidth, reqHeight);
+        //options.inSampleSize = Config.IMAGE_THUMBNAIL_SIMPLE_SIZE;
 
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeStream(inputStream, null, options);
+        return BitmapFactory.decodeStream(imageFile.getInputStream(), null, options);
     }
 
     public static int calculateInSampleSize(
@@ -108,4 +110,17 @@ public class Utils {
 
         return inSampleSize;
     }
+
+    public static int calculateLessInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+
+        double scaleHeight = height / (reqHeight * 1.0);
+        double scaleWidth = width / (reqWidth * 1.0);
+
+        return (int)Math.floor(scaleHeight < scaleWidth ? scaleHeight : scaleWidth);
+    }
+
 }
