@@ -113,12 +113,6 @@ public class GridAdapter extends BaseAdapter {
                     bitmapDrawable.getBitmap().recycle();
                 }
 
-                if (file.isDirectory()) {
-                    viewHolder.thumbnail.setImageBitmap(folderBitmap);
-                } else {
-                    viewHolder.thumbnail.setImageBitmap(pictureBitmap);
-                }
-
                 mThumbnailList.add(file.getName());
                 updateThumbnail(viewHolder.thumbnail, position);
 
@@ -146,8 +140,21 @@ public class GridAdapter extends BaseAdapter {
 
                 ImageFile imageFile = mImageList.get(position);
 
+                final boolean isDirectory = imageFile.isDirectory();
+
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (isDirectory) {
+                            imageView.setImageBitmap(folderBitmap);
+                        } else {
+                            imageView.setImageBitmap(pictureBitmap);
+                        }
+                    }
+                });
+
                 // generate folder thumbnail
-                if (imageFile.isDirectory()) {
+                if (isDirectory) {
                     try {
                         for (ImageFile file : imageFile.listFiles()) {
                             if (file.isImage()) {
