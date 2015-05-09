@@ -570,17 +570,29 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
                     options.inJustDecodeBounds = false;
 
+                    final Bitmap originBitmap;
+                    final Bitmap bitmap;
+
                     if (!isHighQuality && !isFirstImageViewer) {
                         options.inPreferredConfig = Bitmap.Config.RGB_565;
                         options.inSampleSize = Config.IMAGE_SIMPLE_SIZE;
+                        originBitmap = BitmapFactory.decodeStream(file.getInputStream(), null, options);
                     } else if (imageHeight > Config.MAX_IMAGE_SIZE || imageWidth > Config.MAX_IMAGE_SIZE) {
-                        options.inSampleSize = Config.IMAGE_SIMPLE_SIZE;
+                        // resize image to accepted size
+                        Bitmap tmpBitmap = BitmapFactory.decodeStream(file.getInputStream());
+
+                        double heightScale = Config.MAX_IMAGE_SIZE/(imageHeight*1.0);
+                        double widthScale = Config.MAX_IMAGE_SIZE/(imageWidth*1.0);
+
+                        double scale = heightScale<widthScale?heightScale:widthScale;
+                        //originBitmap = ThumbnailUtils.extractThumbnail(tmpBitmap, (int)(imageWidth*scale),(int)(imageHeight*scale));
+                        originBitmap = Bitmap.createScaledBitmap(tmpBitmap, (int)(imageWidth*scale),(int)(imageHeight*scale), true);
+                        tmpBitmap.recycle();
+                    } else {
+                        originBitmap = BitmapFactory.decodeStream(file.getInputStream());
                     }
 
                     isFirstImageViewer = false;
-
-                    final Bitmap originBitmap = BitmapFactory.decodeStream(file.getInputStream(), null, options);
-                    final Bitmap bitmap;
 
                     switch (rotateType) {
                         case ROTATE_SCREEN_FIT_IMAGE:
