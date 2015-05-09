@@ -98,6 +98,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_main);
 
+        System.setProperty("jcifs.smb.client.responseTimeout", "3000");
+        System.setProperty("jcifs.smb.client.soTimeout", "2000");
+
         excludeList.add("Android");
         excludeList.add("storage");
         excludeList.add("tmp");

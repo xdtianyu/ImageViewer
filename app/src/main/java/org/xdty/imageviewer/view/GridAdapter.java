@@ -99,6 +99,7 @@ public class GridAdapter extends BaseAdapter {
             viewHolder = (ViewHolder) convertView.getTag();
             String name = (String) viewHolder.thumbnail.getTag();
             mThumbnailList.remove(name);
+            viewHolder.thumbnail.setImageBitmap(null);
         }
 
         if (mImageList.size() > position && mImageList.get(position) != null) {
@@ -106,11 +107,6 @@ public class GridAdapter extends BaseAdapter {
                 ImageFile file = mImageList.get(position);
                 viewHolder.title.setText(file.getName());
                 viewHolder.thumbnail.setTag(file.getName());
-
-//                BitmapDrawable bitmapDrawable = (BitmapDrawable) viewHolder.thumbnail.getDrawable();
-//                if (bitmapDrawable != null && bitmapDrawable.getBitmap() != pictureBitmap && bitmapDrawable.getBitmap() != folderBitmap) {
-//                    bitmapDrawable.getBitmap().recycle();
-//                }
 
                 mThumbnailList.add(file.getName());
                 updateThumbnail(viewHolder.thumbnail, viewHolder.lock, position);
@@ -180,11 +176,6 @@ public class GridAdapter extends BaseAdapter {
                             @Override
                             public void run() {
                                 if (mImageList.size() > position && mImageList.get(position).getName().equals(imageView.getTag())) {
-//                                    BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
-//
-//                                    if (bitmapDrawable.getBitmap() != pictureBitmap && bitmapDrawable.getBitmap() != folderBitmap) {
-//                                        bitmapDrawable.getBitmap().recycle();
-//                                    }
                                     imageView.setImageBitmap(bitmap);
                                 }
                             }
@@ -215,6 +206,7 @@ public class GridAdapter extends BaseAdapter {
                         } catch (SmbException e) {
                             e.printStackTrace();
                             loadingLock.unlock();
+                            return;
                         }
                     }
                     // no image found, just return
@@ -228,7 +220,6 @@ public class GridAdapter extends BaseAdapter {
                         Bitmap tmpBitmap = BitmapFactory.decodeStream(imageFile.getInputStream());
                         if (tmpBitmap != null) {
                             final Bitmap bitmap = ThumbnailUtils.extractThumbnail(tmpBitmap, imageView.getWidth(), imageView.getHeight());
-//                            tmpBitmap.recycle();
                             if (f.createNewFile()) {
                                 // save thumbnail to cache
                                 FileOutputStream out = new FileOutputStream(f);
@@ -239,10 +230,6 @@ public class GridAdapter extends BaseAdapter {
                                     @Override
                                     public void run() {
                                         if (mImageList.size() > position && mImageList.get(position).getName().equals(imageView.getTag())) {
-//                                            BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
-//                                            if (bitmapDrawable.getBitmap() != pictureBitmap && bitmapDrawable.getBitmap() != folderBitmap) {
-//                                                bitmapDrawable.getBitmap().recycle();
-//                                            }
                                             imageView.setImageBitmap(bitmap);
                                         }
                                     }
