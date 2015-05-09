@@ -19,13 +19,13 @@
 
     <string name="network_share">Network share</string>
     <string name="windows_share">Add windows share</string>
-    <string name="windows_share_server">Server address:</string>
+    <string name="windows_share_server">Address:</string>
     <string name="windows_share_server_hint" translatable="false">192.168.1.100</string>
     <string name="windows_share_username">Username:</string>
     <string name="windows_share_username_hint" translatable="false">Administrator</string>
     <string name="windows_share_password">Password:</string>
     <string name="windows_share_password_hint" translatable="false">********</string>
-    <string name="windows_share_folder">Shared folder:</string>
+    <string name="windows_share_folder">Folder:</string>
     <string name="windows_share_folder_hint" translatable="false">mnt</string>
     <string name="windows_share_summary">Connect windows share or samba server </string>
     <string name="server_address_cannot_be_empty">Server address cannot be empty</string>

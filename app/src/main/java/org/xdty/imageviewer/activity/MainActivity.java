@@ -572,9 +572,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
                     if (!isHighQuality && !isFirstImageViewer) {
                         options.inPreferredConfig = Bitmap.Config.RGB_565;
-                        options.inSampleSize = 2;
-                    } else if (imageHeight > 2048 || imageWidth > 2048) {
-                        options.inSampleSize = 2;
+                        options.inSampleSize = Config.IMAGE_SIMPLE_SIZE;
+                    } else if (imageHeight > Config.MAX_IMAGE_SIZE || imageWidth > Config.MAX_IMAGE_SIZE) {
+                        options.inSampleSize = Config.IMAGE_SIMPLE_SIZE;
                     }
 
                     isFirstImageViewer = false;

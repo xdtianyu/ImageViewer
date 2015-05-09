@@ -19,4 +19,7 @@ public class Config {
 
     public final static String SERVERS = "servers";
 
+    public final static int MAX_IMAGE_SIZE = 2048;
+    public final static int IMAGE_SIMPLE_SIZE = 2;
+
 }
