@@ -544,7 +544,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             @Override
             public void run() {
 
-                if (mViewPager != null && position != mGridPosition) {
+                if (mViewPager != null && mImageFileList.indexOf(mImageList.get(position)) != mGridPosition) {
                     try {
                         Thread.sleep(20);
                     } catch (InterruptedException e) {
