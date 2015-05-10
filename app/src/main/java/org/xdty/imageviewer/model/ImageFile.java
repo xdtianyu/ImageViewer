@@ -1,5 +1,7 @@
 package org.xdty.imageviewer.model;
 
+import org.xdty.imageviewer.utils.Utils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,6 +19,8 @@ import jcifs.smb.SmbFile;
 public class ImageFile {
     private SmbFile smbFile;
     private File localFile;
+    private int imageHeight;
+    private int imageWidth;
 
     public ImageFile(String path) throws MalformedURLException {
         new ImageFile(path, null);
@@ -37,6 +41,22 @@ public class ImageFile {
 
     public ImageFile(File localFile) {
         this.localFile = localFile;
+    }
+
+    public int getImageHeight() {
+        return imageHeight;
+    }
+
+    public void setImageHeight(int imageHeight) {
+        this.imageHeight = imageHeight;
+    }
+
+    public int getImageWidth() {
+        return imageWidth;
+    }
+
+    public void setImageWidth(int imageWidth) {
+        this.imageWidth = imageWidth;
     }
 
     public boolean isDirectory() {
@@ -175,12 +195,12 @@ public class ImageFile {
 
     private boolean hasImage(int step) throws SmbException {
         boolean result = false;
-        if (isDirectory() && step>0) {
+        if (isDirectory() && step > 0) {
             ImageFile[] files = listFiles();
             if (files.length > 0) {
                 // TODO: optimize algorithms
                 for (ImageFile f : files) {
-                    if (f.isImage() || f.isDirectory() && f.hasImage(step-1)) {
+                    if (f.isImage() || f.isDirectory() && f.hasImage(step - 1)) {
                         result = true;
                         break;
                     }
@@ -188,7 +208,7 @@ public class ImageFile {
             }
         }
 
-        if (step==0) {
+        if (step == 0) {
             result = true;
         }
 
@@ -208,6 +228,30 @@ public class ImageFile {
     }
 
     public boolean isSamba() {
-        return smbFile!=null;
+        return smbFile != null;
+    }
+
+    public String getMimeType() {
+        if (smbFile != null) {
+            return Utils.getMimeType(smbFile.getPath());
+        } else {
+            return Utils.getMimeType(localFile.getPath());
+        }
+    }
+
+    public String getFormattedSize() {
+        if (smbFile != null) {
+            return Utils.humanReadableByteCount(smbFile.getContentLength(), true);
+        } else {
+            return Utils.humanReadableByteCount(localFile.length(), true);
+        }
+    }
+
+    public String getFormattedDate() {
+        if (smbFile != null) {
+            return Utils.humanReadableDate(smbFile.getLastModified());
+        } else {
+            return Utils.humanReadableDate(localFile.lastModified());
+        }
     }
 }

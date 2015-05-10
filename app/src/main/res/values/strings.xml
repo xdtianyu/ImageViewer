@@ -65,6 +65,11 @@
 
     <string name="network_sort_type">Network images</string>
     <string name="network_sort_reverse">Reverse network images</string>
+    <string name="detail_path">Path</string>
+    <string name="detail_type">Type</string>
+    <string name="detail_resolution">Resolution</string>
+    <string name="detail_date">Date</string>
+    <string name="detail_size">Size</string>
 
     <string-array name="image_sort_entries">
         <item>@string/sort_name</item>

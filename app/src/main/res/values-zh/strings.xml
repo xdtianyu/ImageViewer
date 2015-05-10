@@ -40,4 +40,9 @@
     <string name="network_sort_reverse">网络图片逆序</string>
     <string name="network_sort_type">网络图片</string>
     <string name="sort_type">排序方式</string>
+    <string name="detail_date">时间</string>
+    <string name="detail_path">路径</string>
+    <string name="detail_resolution">尺寸</string>
+    <string name="detail_size">大小</string>
+    <string name="detail_type">类型</string>
 </resources>

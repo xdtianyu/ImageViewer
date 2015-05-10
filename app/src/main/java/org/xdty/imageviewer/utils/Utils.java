@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.util.TypedValue;
+import android.webkit.MimeTypeMap;
 
 import org.xdty.imageviewer.model.Config;
 import org.xdty.imageviewer.model.ImageFile;
@@ -12,6 +13,9 @@ import org.xdty.imageviewer.model.ImageFile;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * Created by ty on 15-4-26.
@@ -131,6 +135,31 @@ public class Utils {
         }
 
         return inSampleSize;
+    }
+
+    public static String getMimeType(String url) {
+        String type;
+        String extension = url.substring(url.lastIndexOf('.')+1);
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
+        type = mime.getMimeTypeFromExtension(extension);
+        return type;
+    }
+
+    // read more from here: http://stackoverflow.com/a/3758880/2600042
+    public static String humanReadableByteCount(long bytes, boolean si) {
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+    }
+
+    private static SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ENGLISH);
+
+    public static String humanReadableDate(long timestamp) {
+        Date date = new Date();
+        date.setTime(timestamp);
+        return format.format(date);
     }
 
 }

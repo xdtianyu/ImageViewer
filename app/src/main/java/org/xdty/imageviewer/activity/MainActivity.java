@@ -1,6 +1,8 @@
 package org.xdty.imageviewer.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -90,13 +92,21 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private boolean isShowHidingFiles = false;
     private boolean isReverseLocalSort = false;
     private boolean isReverseNetworkSort = false;
-
     private ArrayList<String> excludeList = new ArrayList<>();
     private Runnable hideSystemUIRunnable;
     private boolean isMenuOpened = false;
     private boolean updateGridOnBack = false;
     private ArrayList<SambaInfo> sambaInfoList = new ArrayList<>();
     private int lastPagePosition = -1;
+    private AlertDialog detailDialog;
+
+    @Override
+    protected void onDestroy() {
+        if (detailDialog != null) {
+            detailDialog.cancel();
+        }
+        super.onDestroy();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -397,15 +407,64 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         isMenuOpened = false;
 
+        boolean result = true;
+
         int id = item.getItemId();
 
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
-            return true;
+        switch (id) {
+            case R.id.action_settings:
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                break;
+            case R.id.action_detail:
+                showDetailDialog();
+                break;
+            default:
+                result = false;
+                break;
         }
 
-        return super.onOptionsItemSelected(item);
+        return result || super.onOptionsItemSelected(item);
+    }
+
+    private void showDetailDialog() {
+        int position = mViewPager.getCurrentItem();
+
+        ImageFile imageFile = mImageList.get(position);
+
+        View view = getLayoutInflater().inflate(R.layout.dialog_detail, (ViewGroup) findViewById(android.R.id.content), false);
+
+        TextView path = (TextView)view.findViewById(R.id.detail_path);
+        TextView type = (TextView)view.findViewById(R.id.detail_type);
+        TextView size = (TextView)view.findViewById(R.id.detail_size);
+        TextView resolution = (TextView)view.findViewById(R.id.detail_resolution);
+        TextView date = (TextView)view.findViewById(R.id.detail_date);
+
+        path.setText(imageFile.getPath());
+        type.setText(imageFile.getMimeType());
+        size.setText(imageFile.getFormattedSize());
+        resolution.setText(""+imageFile.getImageWidth()+"x"+imageFile.getImageHeight());
+        date.setText(imageFile.getFormattedDate());
+
+        AlertDialog.Builder builder = new Builder(this);
+        builder.setTitle("" + position + "/" + mImageList.size());
+        builder.setView(view);
+        builder.setCancelable(true);
+        builder.setPositiveButton(android.R.string.ok, null);
+        detailDialog = builder.create();
+        detailDialog.show();
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+
+        if (mViewPager.getVisibility() == View.VISIBLE) {
+            menu.findItem(R.id.action_detail).setVisible(true);
+        } else {
+            menu.findItem(R.id.action_detail).setVisible(false);
+        }
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     private void updateFileGrid() {
@@ -601,6 +660,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
                     int imageHeight = options.outHeight;
                     int imageWidth = options.outWidth;
+
+                    file.setImageHeight(imageHeight);
+                    file.setImageWidth(imageWidth);
 
                     options.inJustDecodeBounds = false;
 
