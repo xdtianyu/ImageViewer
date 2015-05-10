@@ -59,8 +59,12 @@
         <item>2</item>
     </string-array>
 
-    <string name="sort">Sort type</string>
-    <string name="sort_reverse">Reverse sort</string>
+    <string name="sort_type">Sort type</string>
+    <string name="local_sort_type">Local images</string>
+    <string name="local_sort_reverse">Reverse local images</string>
+
+    <string name="network_sort_type">Network images</string>
+    <string name="network_sort_reverse">Reverse network images</string>
 
     <string-array name="image_sort_entries">
         <item>@string/sort_name</item>

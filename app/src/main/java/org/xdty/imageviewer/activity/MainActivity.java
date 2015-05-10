@@ -83,11 +83,13 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private GridView gridView;
     private int mGridPosition = -1;
     private RotateType rotateType = RotateType.ORIGINAL;
-    private SortType sortType = SortType.FILE_NAME;
+    private SortType localSortType = SortType.FILE_NAME;
+    private SortType networkSortType = SortType.FILE_NAME;
     private SambaInfo currentSambaInfo = new SambaInfo();
     private boolean isFileExplorerMode = false;
     private boolean isShowHidingFiles = false;
-    private boolean isReverseSort = false;
+    private boolean isReverseLocalSort = false;
+    private boolean isReverseNetworkSort = false;
 
     private ArrayList<String> excludeList = new ArrayList<>();
     private Runnable hideSystemUIRunnable;
@@ -276,11 +278,13 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         }
 
         rotateType = RotateType.build(sharedPreferences.getString(Config.ROTATE_TYPE, "2"));
-        sortType = SortType.build(sharedPreferences.getString(Config.SORT_TYPE, "1"));
+        localSortType = SortType.build(sharedPreferences.getString(Config.LOCAL_SORT_TYPE, "1"));
+        networkSortType = SortType.build(sharedPreferences.getString(Config.NETWORK_SORT_TYPE, "0"));
 
         isFileExplorerMode = sharedPreferences.getBoolean(Config.FILE_EXPLORER_MODE, true);
         isShowHidingFiles = sharedPreferences.getBoolean(Config.SHOW_HIDING_FILES, false);
-        isReverseSort = sharedPreferences.getBoolean(Config.REVERSE_SORT, false);
+        isReverseLocalSort = sharedPreferences.getBoolean(Config.REVERSE_LOCAL_SORT, false);
+        isReverseNetworkSort = sharedPreferences.getBoolean(Config.REVERSE_NETWORK_SORT, false);
 
         if (!serverPath.equals(currentSambaInfo.build())) {
             mCurrentPath = Config.ROOT_PATH;
@@ -497,7 +501,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                         // TODO: read sort config
                         // sort by filename
 
-                        switch (sortType) {
+                        switch (root.isSamba() ? networkSortType : localSortType) {
                             case FILE_NAME:
                                 Arrays.sort(files, ImageFileHelper.NAME_COMPARATOR);
                                 break;
@@ -509,7 +513,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                                 break;
                         }
 
-                        if (isReverseSort) {
+                        if (root.isSamba() ? isReverseNetworkSort : isReverseLocalSort) {
                             List<ImageFile> list = Arrays.asList(files);
                             Collections.reverse(list);
                             files = (ImageFile[]) list.toArray();
@@ -577,14 +581,14 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 imageLoadLock.lock();
 
                 try {
-                    if (imageViewWeakReference.get() == null || mViewPager.getVisibility()==View.GONE) {
+                    if (imageViewWeakReference.get() == null || mViewPager.getVisibility() == View.GONE) {
                         if (imageLoadLock.isHeldByCurrentThread()) {
                             imageLoadLock.unlock();
                         }
                         return;
                     }
 
-                    if (!isHighQuality && mViewPager.getCurrentItem()==position) {
+                    if (!isHighQuality && mViewPager.getCurrentItem() == position) {
                         loadImage(file, imageView, position, true, false);
                     }
 

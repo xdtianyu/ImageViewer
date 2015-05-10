@@ -206,4 +206,8 @@ public class ImageFile {
             return false;
         }
     }
+
+    public boolean isSamba() {
+        return smbFile!=null;
+    }
 }

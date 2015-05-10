@@ -35,6 +35,9 @@
     <string name="sort_content_length">文件大小</string>
     <string name="sort_last_modified">修改日期</string>
     <string name="sort_name">文件名</string>
-    <string name="sort">排序方式</string>
-    <string name="sort_reverse">逆序排列</string>
+    <string name="local_sort_type">本地图片</string>
+    <string name="local_sort_reverse">本地图片逆序</string>
+    <string name="network_sort_reverse">网络图片逆序</string>
+    <string name="network_sort_type">网络图片</string>
+    <string name="sort_type">排序方式</string>
 </resources>
