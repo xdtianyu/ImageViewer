@@ -94,7 +94,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private boolean isMenuOpened = false;
     private boolean updateGridOnBack = false;
     private ArrayList<SambaInfo> sambaInfoList = new ArrayList<>();
-    private boolean isFirstImageViewer = true;
     private int lastPagePosition = -1;
 
     @Override
@@ -330,7 +329,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             }
 
             mViewPager.setAdapter(null);
-            isFirstImageViewer = true;
             lastPagePosition = -1;
 
         } else if (mPathStack.size() > 0) {
@@ -579,11 +577,15 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 imageLoadLock.lock();
 
                 try {
-                    if (imageViewWeakReference.get() == null) {
+                    if (imageViewWeakReference.get() == null || mViewPager.getVisibility()==View.GONE) {
                         if (imageLoadLock.isHeldByCurrentThread()) {
                             imageLoadLock.unlock();
                         }
                         return;
+                    }
+
+                    if (!isHighQuality && mViewPager.getCurrentItem()==position) {
+                        loadImage(file, imageView, position, true, false);
                     }
 
                     Log.d(TAG, "start lock: " + position);
@@ -601,7 +603,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     final Bitmap originBitmap;
                     final Bitmap bitmap;
 
-                    if (!isHighQuality && !isFirstImageViewer) {
+                    if (!isHighQuality) {
                         options.inPreferredConfig = Bitmap.Config.RGB_565;
                         options.inSampleSize = Config.IMAGE_SIMPLE_SIZE;
                         originBitmap = BitmapFactory.decodeStream(file.getInputStream(), null, options);
@@ -619,8 +621,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     } else {
                         originBitmap = BitmapFactory.decodeStream(file.getInputStream());
                     }
-
-                    isFirstImageViewer = false;
 
                     switch (rotateType) {
                         case ROTATE_SCREEN_FIT_IMAGE:
