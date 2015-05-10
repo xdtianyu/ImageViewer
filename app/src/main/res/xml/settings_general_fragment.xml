@@ -13,5 +13,15 @@
     <SwitchPreference
         android:title="@string/show_hiding_files"
         android:key="show_hiding_files"
-        android:defaultValue="true"/>
+        android:defaultValue="false"/>
+    <ListPreference
+        android:title="@string/sort"
+        android:key="sort_type"
+        android:entries="@array/image_sort_entries"
+        android:entryValues="@array/image_sort_values"
+        android:defaultValue="1"/>
+    <SwitchPreference
+        android:title="@string/sort_reverse"
+        android:key="reverse_sort"
+        android:defaultValue="false"/>
 </PreferenceScreen>

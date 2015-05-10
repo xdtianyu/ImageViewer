@@ -36,6 +36,7 @@ import org.xdty.imageviewer.model.Config;
 import org.xdty.imageviewer.model.ImageFile;
 import org.xdty.imageviewer.model.RotateType;
 import org.xdty.imageviewer.model.SambaInfo;
+import org.xdty.imageviewer.model.SortType;
 import org.xdty.imageviewer.utils.ImageFileHelper;
 import org.xdty.imageviewer.utils.Utils;
 import org.xdty.imageviewer.view.GridAdapter;
@@ -49,7 +50,9 @@ import java.net.MalformedURLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 import jcifs.smb.SmbException;
@@ -80,9 +83,11 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private GridView gridView;
     private int mGridPosition = -1;
     private RotateType rotateType = RotateType.ORIGINAL;
+    private SortType sortType = SortType.FILE_NAME;
     private SambaInfo currentSambaInfo = new SambaInfo();
     private boolean isFileExplorerMode = false;
     private boolean isShowHidingFiles = false;
+    private boolean isReverseSort = false;
 
     private ArrayList<String> excludeList = new ArrayList<>();
     private Runnable hideSystemUIRunnable;
@@ -272,9 +277,11 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         }
 
         rotateType = RotateType.build(sharedPreferences.getString(Config.ROTATE_TYPE, "2"));
+        sortType = SortType.build(sharedPreferences.getString(Config.SORT_TYPE, "1"));
 
-        isFileExplorerMode = sharedPreferences.getBoolean(Config.FILE_EXPLORER_MODE, false);
+        isFileExplorerMode = sharedPreferences.getBoolean(Config.FILE_EXPLORER_MODE, true);
         isShowHidingFiles = sharedPreferences.getBoolean(Config.SHOW_HIDING_FILES, false);
+        isReverseSort = sharedPreferences.getBoolean(Config.REVERSE_SORT, false);
 
         if (!serverPath.equals(currentSambaInfo.build())) {
             mCurrentPath = Config.ROOT_PATH;
@@ -491,7 +498,24 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
                         // TODO: read sort config
                         // sort by filename
-                        Arrays.sort(files, ImageFileHelper.NAME_COMPARATOR);
+
+                        switch (sortType) {
+                            case FILE_NAME:
+                                Arrays.sort(files, ImageFileHelper.NAME_COMPARATOR);
+                                break;
+                            case LAST_MODIFIED:
+                                Arrays.sort(files, ImageFileHelper.LAST_MODIFIED_COMPARATOR);
+                                break;
+                            case CONTENT_LENGTH:
+                                Arrays.sort(files, ImageFileHelper.CONTENT_LENGTH_COMPARATOR);
+                                break;
+                        }
+
+                        if (isReverseSort) {
+                            List<ImageFile> list = Arrays.asList(files);
+                            Collections.reverse(list);
+                            files = (ImageFile[]) list.toArray();
+                        }
 
                         //Log.d(TAG, s.getName());
                         // only show images and directories

@@ -25,7 +25,7 @@ public class ImageFileHelper {
             }
 
             if (rhs.endsWith("/")) {
-                rhs = rhs.substring(0, rhs.length()-1);
+                rhs = rhs.substring(0, rhs.length() - 1);
             }
 
             if (lhs.startsWith(rhs)) {
@@ -35,6 +35,42 @@ public class ImageFileHelper {
             } else {
                 // Fixme: parse 01-11. 1-10
                 return lhs.compareTo(rhs);
+            }
+        }
+    };
+
+    public static final Comparator<ImageFile> LAST_MODIFIED_COMPARATOR = new Comparator<ImageFile>() {
+        @Override
+        public int compare(ImageFile lhs, ImageFile rhs) {
+            return compare(lhs.getLastModified(), rhs.getLastModified());
+        }
+
+        private int compare(long lhs, long rhs) {
+            long result = lhs - rhs;
+            if (result == 0) {
+                return 0;
+            } else if (result < 0) {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
+    };
+
+    public static final Comparator<ImageFile> CONTENT_LENGTH_COMPARATOR = new Comparator<ImageFile>() {
+        @Override
+        public int compare(ImageFile lhs, ImageFile rhs) {
+            return compare(lhs.getContentLength(), rhs.getContentLength());
+        }
+
+        private int compare(long lhs, long rhs) {
+            long result = lhs - rhs;
+            if (result == 0) {
+                return 0;
+            } else if (result < 0) {
+                return 1;
+            } else {
+                return -1;
             }
         }
     };
