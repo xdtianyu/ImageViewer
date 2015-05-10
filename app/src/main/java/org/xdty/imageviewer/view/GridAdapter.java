@@ -182,7 +182,9 @@ public class GridAdapter extends BaseAdapter {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                if (mImageList.size() > position && mImageList.get(position).getName().equals(fileName)) {
+                                if (mImageList.size() > position &&
+                                        mImageList.get(position).getName().equals(fileName) &&
+                                        imageView.getTag().equals(fileName)) {
                                     imageView.setImageBitmap(bitmap);
                                 }
                             }
@@ -241,7 +243,8 @@ public class GridAdapter extends BaseAdapter {
                                     @Override
                                     public void run() {
                                         if (mImageList.size() > position &&
-                                                mImageList.get(position).getName().equals(fileName)) {
+                                                mImageList.get(position).getName().equals(fileName) &&
+                                                imageView.getTag().equals(fileName)) {
                                             imageView.setImageBitmap(bitmap);
                                         }
                                     }
@@ -261,7 +264,6 @@ public class GridAdapter extends BaseAdapter {
     }
 
     public void clearThumbnailList() {
-        Log.d(TAG, "clearThumbnailList");
         mThumbnailList.clear();
     }
 
