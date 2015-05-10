@@ -8,8 +8,8 @@
         android:layout_height="match_parent"
         >
         <GridView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
             android:paddingLeft="@dimen/grid_padding"
             android:paddingRight="@dimen/grid_padding"
             android:paddingTop="@dimen/grid_padding_top"
@@ -19,7 +19,7 @@
             android:clipToPadding="false"
             android:drawSelectorOnTop="true"
             android:id="@+id/gridView"
-            android:numColumns="auto_fit"/>
+            android:numColumns="2"/>
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent">

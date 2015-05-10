@@ -96,29 +96,30 @@ public class GridAdapter extends BaseAdapter {
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
-            String name = (String) viewHolder.thumbnail.getTag();
-            mThumbnailList.remove(name);
-            viewHolder.thumbnail.setImageBitmap(null);
         }
 
-        if (mImageList.size() > position && mImageList.get(position) != null) {
-            try {
-                ImageFile file = mImageList.get(position);
+        try {
+
+            ImageFile file = mImageList.get(position);
+            String name = (String) viewHolder.thumbnail.getTag();
+            if (name==null || !name.equals(file.getName())) {
+                mThumbnailList.remove(name);
+                viewHolder.thumbnail.setImageBitmap(null);
                 viewHolder.title.setText(file.getName());
                 viewHolder.thumbnail.setTag(file.getName());
 
                 mThumbnailList.add(file.getName());
                 updateThumbnail(viewHolder.thumbnail, viewHolder.lock, position);
-            } catch (IndexOutOfBoundsException e) {
-                e.printStackTrace();
             }
+        } catch (IndexOutOfBoundsException e) {
+            e.printStackTrace();
         }
 
         return convertView;
     }
 
     // generate samba file md5 and thumbnail
-    private void updateThumbnail(final ImageView imageView, final ImageView lock, final int position) {
+    private void updateThumbnail(final ImageView imageView, final ImageView lockView, final int position) {
 
         new Thread(new Runnable() {
             @Override
@@ -131,17 +132,17 @@ public class GridAdapter extends BaseAdapter {
                 ImageFile imageFile = mImageList.get(position);
 
                 final boolean isDirectory = imageFile.isDirectory();
-                boolean isLocked = true;
+                boolean isWritable = false;
 
                 try {
                     if (imageFile.canRead() && imageFile.canWrite()) {
-                        isLocked = false;
+                        isWritable = true;
                     }
                 } catch (SmbException e) {
                     e.printStackTrace();
                 }
 
-                final int visibility = isLocked?View.VISIBLE:View.GONE;
+                final int visibility = isWritable?View.GONE:View.VISIBLE;
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -150,9 +151,11 @@ public class GridAdapter extends BaseAdapter {
                         } else {
                             imageView.setImageBitmap(pictureBitmap);
                         }
-                        lock.setVisibility(visibility);
+                        lockView.setVisibility(visibility);
                     }
                 });
+
+                final String fileName = imageFile.getName();
 
                 // get file's md5 and check if thumbnail exist
                 String md5 = Utils.md5(imageFile);
@@ -162,7 +165,7 @@ public class GridAdapter extends BaseAdapter {
                     thumbnailLock.lock();
 
                     // check if is scroll out
-                    if (mImageList.size() > position && !mThumbnailList.contains(mImageList.get(position).getName())) {
+                    if (mImageList.size() > position && !mThumbnailList.contains(fileName)) {
                         if (thumbnailLock.isHeldByCurrentThread()) {
                             thumbnailLock.unlock();
                         } else {
@@ -179,7 +182,7 @@ public class GridAdapter extends BaseAdapter {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                if (mImageList.size() > position && mImageList.get(position).getName().equals(imageView.getTag())) {
+                                if (mImageList.size() > position && mImageList.get(position).getName().equals(fileName)) {
                                     imageView.setImageBitmap(bitmap);
                                 }
                             }
@@ -196,9 +199,8 @@ public class GridAdapter extends BaseAdapter {
                     }
                 } else {
                     loadingLock.lock();
-
                     // check if is scroll out
-                    if (mImageList.size() > position && !mThumbnailList.contains(mImageList.get(position).getName())) {
+                    if (mImageList.size() > position && !mThumbnailList.contains(fileName)) {
                         loadingLock.unlock();
                         return;
                     }
@@ -238,12 +240,15 @@ public class GridAdapter extends BaseAdapter {
                                 handler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        if (mImageList.size() > position && mImageList.get(position).getName().equals(imageView.getTag())) {
+                                        if (mImageList.size() > position &&
+                                                mImageList.get(position).getName().equals(fileName)) {
                                             imageView.setImageBitmap(bitmap);
                                         }
                                     }
                                 });
                             }
+                        } else {
+                            Log.e(TAG, "generate thumbnail failed");
                         }
                     } catch (IllegalArgumentException | IOException | IndexOutOfBoundsException e) {
                         e.printStackTrace();
@@ -256,6 +261,7 @@ public class GridAdapter extends BaseAdapter {
     }
 
     public void clearThumbnailList() {
+        Log.d(TAG, "clearThumbnailList");
         mThumbnailList.clear();
     }
 

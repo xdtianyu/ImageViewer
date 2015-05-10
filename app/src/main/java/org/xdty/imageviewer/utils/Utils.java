@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.util.TypedValue;
 
+import org.xdty.imageviewer.model.Config;
 import org.xdty.imageviewer.model.ImageFile;
 
 import java.io.IOException;
@@ -16,6 +17,8 @@ import java.security.NoSuchAlgorithmException;
  * Created by ty on 15-4-26.
  */
 public class Utils {
+
+    public final static String TAG = "Utils";
 
     public static boolean isImage(String name) {
         name = name.toLowerCase();
@@ -120,7 +123,13 @@ public class Utils {
         double scaleHeight = height / (reqHeight * 1.0);
         double scaleWidth = width / (reqWidth * 1.0);
 
-        return (int) Math.floor(scaleHeight < scaleWidth ? scaleHeight : scaleWidth);
+        int inSampleSize = (int) Math.floor(scaleHeight < scaleWidth ? scaleHeight : scaleWidth);
+
+        if (inSampleSize>10) {
+            inSampleSize = Config.IMAGE_THUMBNAIL_SIMPLE_SIZE;
+        }
+
+        return inSampleSize;
     }
 
 }
