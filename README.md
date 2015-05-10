@@ -1,6 +1,6 @@
 # ImageViewer #
 
-ImageViewer is a open source image viewer for LAN/WAN's samba shared photos.
+ImageViewer is an open source image viewer for LAN/WAN's samba shared photos.
 
 ### Contribution guidelines ###
 
