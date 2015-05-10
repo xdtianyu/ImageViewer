@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -99,11 +100,20 @@ public class GridAdapter extends BaseAdapter {
         }
 
         try {
-
             ImageFile file = mImageList.get(position);
             String name = (String) viewHolder.thumbnail.getTag();
-            if (name==null || !name.equals(file.getName())) {
+            if (name == null || !name.equals(file.getName())) {
                 mThumbnailList.remove(name);
+
+                BitmapDrawable bitmapDrawable = (BitmapDrawable) viewHolder.thumbnail.getDrawable();
+
+                if (bitmapDrawable != null) {
+                    Bitmap bitmap = bitmapDrawable.getBitmap();
+                    if (bitmap != null && bitmap != folderBitmap && bitmap != pictureBitmap) {
+                        bitmap.recycle();
+                    }
+                }
+
                 viewHolder.thumbnail.setImageBitmap(null);
                 viewHolder.title.setText(file.getName());
                 viewHolder.thumbnail.setTag(file.getName());
@@ -142,12 +152,13 @@ public class GridAdapter extends BaseAdapter {
                     e.printStackTrace();
                 }
 
-                final int visibility = isWritable?View.GONE:View.VISIBLE;
+                final int visibility = isWritable ? View.GONE : View.VISIBLE;
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         if (isDirectory) {
                             imageView.setImageBitmap(folderBitmap);
+                            BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
                         } else {
                             imageView.setImageBitmap(pictureBitmap);
                         }

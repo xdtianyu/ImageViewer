@@ -88,6 +88,7 @@ public class Utils {
 
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
         return BitmapFactory.decodeStream(imageFile.getInputStream(), null, options);
     }
 
