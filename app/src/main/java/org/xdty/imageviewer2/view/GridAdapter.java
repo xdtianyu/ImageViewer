@@ -158,7 +158,6 @@ public class GridAdapter extends BaseAdapter {
                     public void run() {
                         if (isDirectory) {
                             imageView.setImageBitmap(folderBitmap);
-                            BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
                         } else {
                             imageView.setImageBitmap(pictureBitmap);
                         }

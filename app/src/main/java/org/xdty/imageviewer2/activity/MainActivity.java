@@ -433,16 +433,16 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         View view = getLayoutInflater().inflate(R.layout.dialog_detail, (ViewGroup) findViewById(android.R.id.content), false);
 
-        TextView path = (TextView)view.findViewById(R.id.detail_path);
-        TextView type = (TextView)view.findViewById(R.id.detail_type);
-        TextView size = (TextView)view.findViewById(R.id.detail_size);
-        TextView resolution = (TextView)view.findViewById(R.id.detail_resolution);
-        TextView date = (TextView)view.findViewById(R.id.detail_date);
+        TextView path = (TextView) view.findViewById(R.id.detail_path);
+        TextView type = (TextView) view.findViewById(R.id.detail_type);
+        TextView size = (TextView) view.findViewById(R.id.detail_size);
+        TextView resolution = (TextView) view.findViewById(R.id.detail_resolution);
+        TextView date = (TextView) view.findViewById(R.id.detail_date);
 
         path.setText(imageFile.getPath());
         type.setText(imageFile.getMimeType());
         size.setText(imageFile.getFormattedSize());
-        resolution.setText(""+imageFile.getImageWidth()+"x"+imageFile.getImageHeight());
+        resolution.setText("" + imageFile.getImageWidth() + "x" + imageFile.getImageHeight());
         date.setText(imageFile.getFormattedDate());
 
         AlertDialog.Builder builder = new Builder(this);
@@ -645,6 +645,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
                     if (!isHighQuality && mViewPager.getCurrentItem() == position) {
                         loadImage(file, imageView, position, true, false);
+                        lastPagePosition = position;
                     }
 
                     Log.d(TAG, "start lock: " + position);
@@ -843,18 +844,20 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             }, 10);
 
             // reload high quality image
-            PhotoView photoView = (PhotoView) mViewPager.findViewWithTag(position);
-            if (!mImageList.get(position).isGif()) {
-                loadImage(mImageList.get(position), photoView, position, true, false);
-            }
-
-            if (lastPagePosition != -1 && lastPagePosition != position) {
-                if (!mImageList.get(lastPagePosition).isGif()) {
-                    loadImage(mImageList.get(lastPagePosition),
-                            (PhotoView) mViewPager.findViewWithTag(lastPagePosition), lastPagePosition, false, false);
+            if (lastPagePosition != position) {
+                PhotoView photoView = (PhotoView) mViewPager.findViewWithTag(position);
+                if (!mImageList.get(position).isGif()) {
+                    loadImage(mImageList.get(position), photoView, position, true, false);
                 }
+
+                if (lastPagePosition != -1 && lastPagePosition != position) {
+                    if (!mImageList.get(lastPagePosition).isGif()) {
+                        loadImage(mImageList.get(lastPagePosition),
+                                (PhotoView) mViewPager.findViewWithTag(lastPagePosition), lastPagePosition, false, false);
+                    }
+                }
+                lastPagePosition = position;
             }
-            lastPagePosition = position;
         }
     }
 
