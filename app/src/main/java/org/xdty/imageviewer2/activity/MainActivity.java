@@ -231,11 +231,10 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 } else {
                     mGridPosition = position;
 
+                    mViewPager.setVisibility(View.VISIBLE);
                     mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
-
                     mViewPager.setCurrentItem(mImageList.indexOf(mImageFileList.get(position)), false);
                     Log.d(TAG, "setCurrentItem:" + position);
-                    mViewPager.setVisibility(View.VISIBLE);
 
                     if (rotateType == RotateType.ROTATE_IMAGE_FIT_SCREEN) {
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -641,9 +640,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
                 try {
                     if (imageViewWeakReference.get() == null || mViewPager.getVisibility() == View.GONE) {
-                        if (imageLoadLock.isHeldByCurrentThread()) {
-                            imageLoadLock.unlock();
-                        }
                         return;
                     }
 
