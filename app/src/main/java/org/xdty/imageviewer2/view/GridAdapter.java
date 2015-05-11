@@ -1,4 +1,4 @@
-package org.xdty.imageviewer.view;
+package org.xdty.imageviewer2.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -14,10 +14,10 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.xdty.imageviewer.R;
-import org.xdty.imageviewer.model.Config;
-import org.xdty.imageviewer.model.ImageFile;
-import org.xdty.imageviewer.utils.Utils;
+import org.xdty.imageviewer2.R;
+import org.xdty.imageviewer2.model.Config;
+import org.xdty.imageviewer2.model.ImageFile;
+import org.xdty.imageviewer2.utils.Utils;
 
 import java.io.File;
 import java.io.FileInputStream;

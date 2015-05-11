@@ -1,14 +1,14 @@
-package org.xdty.imageviewer.activity;
+package org.xdty.imageviewer2.activity;
 
 import android.app.ActionBar;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.view.MenuItem;
 
-import org.xdty.imageviewer.R;
-import org.xdty.imageviewer.fragment.settings.AboutFragment;
-import org.xdty.imageviewer.fragment.settings.GeneralFragment;
-import org.xdty.imageviewer.fragment.settings.NetworkShareFragment;
+import org.xdty.imageviewer2.R;
+import org.xdty.imageviewer2.fragment.settings.AboutFragment;
+import org.xdty.imageviewer2.fragment.settings.GeneralFragment;
+import org.xdty.imageviewer2.fragment.settings.NetworkShareFragment;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package org.xdty.imageviewer.view;
+package org.xdty.imageviewer2.view;
 
 import android.content.Context;
 import android.util.AttributeSet;

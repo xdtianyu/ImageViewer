@@ -3,6 +3,6 @@
     <PreferenceScreen
         android:summary="@string/windows_share_summary"
         android:title="@string/windows_share">
-        <intent android:action="org.xdty.imageviewer.action.ACTION_ADD_SHARED_FOLDER"/>
+        <intent android:action="org.xdty.imageviewer2.action.ACTION_ADD_SHARED_FOLDER"/>
     </PreferenceScreen>
 </PreferenceScreen>

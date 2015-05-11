@@ -8,7 +8,7 @@
         android:key="license"
         android:summary=""
         android:title="@string/license">
-        <intent android:action="org.xdty.imageviewer.action.VIEW_LICENSES"/>
+        <intent android:action="org.xdty.imageviewer2.action.VIEW_LICENSES"/>
     </Preference>
     <Preference
         android:key="version"

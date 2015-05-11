@@ -1,6 +1,6 @@
-package org.xdty.imageviewer.model;
+package org.xdty.imageviewer2.model;
 
-import org.xdty.imageviewer.utils.Utils;
+import org.xdty.imageviewer2.utils.Utils;
 
 import java.io.File;
 import java.io.FileInputStream;

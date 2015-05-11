@@ -1,4 +1,4 @@
-package org.xdty.imageviewer.model;
+package org.xdty.imageviewer2.model;
 
 /**
  * Created by ty on 15-4-30.

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.xdty.imageviewer" >
+    package="org.xdty.imageviewer2" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -10,7 +10,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name">
         <activity
-            android:name=".activity.MainActivity"
+            android:name="org.xdty.imageviewer2.activity.MainActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/AppTheme"
             android:label="@string/app_name" >
@@ -21,22 +21,22 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.SettingsActivity"
+            android:name="org.xdty.imageviewer2.activity.SettingsActivity"
             android:label="@string/settings">
         </activity>
-        <activity android:name=".activity.EditServerActivity"
+        <activity android:name="org.xdty.imageviewer2.activity.EditServerActivity"
                   android:theme="@style/AddShareTheme"
                   android:label="@string/add_share_activity">
             <intent-filter>
-                <action android:name="org.xdty.imageviewer.action.ACTION_ADD_SHARED_FOLDER"/>
+                <action android:name="org.xdty.imageviewer2.action.ACTION_ADD_SHARED_FOLDER"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
-        <activity android:name=".activity.LicensesActivity"
+        <activity android:name="org.xdty.imageviewer2.activity.LicensesActivity"
                   android:label="@string/license"
                   android:theme="@android:style/Theme.Material.DialogWhenLarge">
             <intent-filter>
-                <action android:name="org.xdty.imageviewer.action.VIEW_LICENSES"/>
+                <action android:name="org.xdty.imageviewer2.action.VIEW_LICENSES"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>

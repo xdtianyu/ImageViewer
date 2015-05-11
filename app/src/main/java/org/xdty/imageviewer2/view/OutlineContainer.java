@@ -1,4 +1,4 @@
-package org.xdty.imageviewer.view;
+package org.xdty.imageviewer2.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -11,8 +11,8 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
-import org.xdty.imageviewer.R;
-import org.xdty.imageviewer.utils.Utils;
+import org.xdty.imageviewer2.R;
+import org.xdty.imageviewer2.utils.Utils;
 
 public class OutlineContainer extends FrameLayout implements Animatable {
 

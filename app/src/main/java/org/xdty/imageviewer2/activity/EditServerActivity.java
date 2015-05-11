@@ -1,4 +1,4 @@
-package org.xdty.imageviewer.activity;
+package org.xdty.imageviewer2.activity;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -17,8 +17,8 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.xdty.imageviewer.R;
-import org.xdty.imageviewer.model.Config;
+import org.xdty.imageviewer2.R;
+import org.xdty.imageviewer2.model.Config;
 
 /**
  * Created by ty on 15-5-7.

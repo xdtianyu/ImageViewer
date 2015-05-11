@@ -4,11 +4,11 @@ android {
     compileSdkVersion 21
     buildToolsVersion "21.1.2"
     defaultConfig {
-        applicationId 'org.xdty.imageviewer'
+        applicationId 'org.xdty.imageviewer2'
         minSdkVersion 21
         targetSdkVersion 21
-        versionCode 5
-        versionName "1.3.4"
+        versionCode 6
+        versionName "1.4.0"
     }
     buildTypes {
         release {

@@ -2,7 +2,7 @@ version 1.3.2 (2015-05-10)
 
 1. Add image sort settings
 2. Add detail dialog
-3. fix first image loading
+3. Fix first image loading
 
 version 1.3.1 (2015-05-10)
 

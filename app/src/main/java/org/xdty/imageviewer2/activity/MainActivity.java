@@ -1,4 +1,4 @@
-package org.xdty.imageviewer.activity;
+package org.xdty.imageviewer2.activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -33,16 +33,16 @@ import com.almeros.android.multitouch.RotateGestureDetector;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.xdty.imageviewer.R;
-import org.xdty.imageviewer.model.Config;
-import org.xdty.imageviewer.model.ImageFile;
-import org.xdty.imageviewer.model.RotateType;
-import org.xdty.imageviewer.model.SambaInfo;
-import org.xdty.imageviewer.model.SortType;
-import org.xdty.imageviewer.utils.ImageFileHelper;
-import org.xdty.imageviewer.utils.Utils;
-import org.xdty.imageviewer.view.GridAdapter;
-import org.xdty.imageviewer.view.JazzyViewPager;
+import org.xdty.imageviewer2.R;
+import org.xdty.imageviewer2.model.Config;
+import org.xdty.imageviewer2.model.ImageFile;
+import org.xdty.imageviewer2.model.RotateType;
+import org.xdty.imageviewer2.model.SambaInfo;
+import org.xdty.imageviewer2.model.SortType;
+import org.xdty.imageviewer2.utils.ImageFileHelper;
+import org.xdty.imageviewer2.utils.Utils;
+import org.xdty.imageviewer2.view.GridAdapter;
+import org.xdty.imageviewer2.view.JazzyViewPager;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -62,7 +62,7 @@ import jcifs.smb.SmbFile;
 import pl.droidsonroids.gif.GifDrawable;
 import uk.co.senab.photoview.PhotoView;
 
-import static org.xdty.imageviewer.utils.Utils.RotateBitmap;
+import static org.xdty.imageviewer2.utils.Utils.RotateBitmap;
 
 
 public class MainActivity extends Activity implements ViewPager.OnPageChangeListener {

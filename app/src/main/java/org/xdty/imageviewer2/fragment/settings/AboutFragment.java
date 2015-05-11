@@ -1,4 +1,4 @@
-package org.xdty.imageviewer.fragment.settings;
+package org.xdty.imageviewer2.fragment.settings;
 
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
-import org.xdty.imageviewer.R;
+import org.xdty.imageviewer2.R;
 
 /**
  * Created by ty on 15-5-2.

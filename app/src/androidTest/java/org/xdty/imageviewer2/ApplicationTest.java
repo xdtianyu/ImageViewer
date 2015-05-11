@@ -1,4 +1,4 @@
-package org.xdty.imageviewer;
+package org.xdty.imageviewer2;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

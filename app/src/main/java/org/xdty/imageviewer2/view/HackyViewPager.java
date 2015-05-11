@@ -1,4 +1,4 @@
-package org.xdty.imageviewer.view;
+package org.xdty.imageviewer2.view;
 
 /**
  * Created by ty on 15-4-26.

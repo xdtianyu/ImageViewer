@@ -1,4 +1,4 @@
-package org.xdty.imageviewer.view;
+package org.xdty.imageviewer2.view;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -16,7 +16,7 @@ import android.view.View;
 
 import com.nineoldandroids.view.ViewHelper;
 
-import org.xdty.imageviewer.R;
+import org.xdty.imageviewer2.R;
 
 import java.util.Arrays;
 import java.util.Collections;

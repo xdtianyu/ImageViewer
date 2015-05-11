@@ -1,4 +1,4 @@
-package org.xdty.imageviewer.model;
+package org.xdty.imageviewer2.model;
 
 import org.json.JSONException;
 import org.json.JSONObject;

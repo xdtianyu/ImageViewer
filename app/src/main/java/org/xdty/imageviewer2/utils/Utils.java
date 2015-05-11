@@ -1,4 +1,4 @@
-package org.xdty.imageviewer.utils;
+package org.xdty.imageviewer2.utils;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -7,8 +7,8 @@ import android.graphics.Matrix;
 import android.util.TypedValue;
 import android.webkit.MimeTypeMap;
 
-import org.xdty.imageviewer.model.Config;
-import org.xdty.imageviewer.model.ImageFile;
+import org.xdty.imageviewer2.model.Config;
+import org.xdty.imageviewer2.model.ImageFile;
 
 import java.io.IOException;
 import java.security.MessageDigest;

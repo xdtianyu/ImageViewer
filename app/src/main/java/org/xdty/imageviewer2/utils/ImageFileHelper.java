@@ -1,6 +1,6 @@
-package org.xdty.imageviewer.utils;
+package org.xdty.imageviewer2.utils;
 
-import org.xdty.imageviewer.model.ImageFile;
+import org.xdty.imageviewer2.model.ImageFile;
 
 import java.util.Comparator;
 
