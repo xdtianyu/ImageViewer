@@ -48,16 +48,6 @@
     <string name="sort_name">File name</string>
     <string name="sort_last_modified">Last modify date</string>
     <string name="sort_content_length">Content length</string>
-    <string-array name="image_rotate_entries">
-        <item>@string/image_original</item>
-        <item>@string/image_fit_screen</item>
-        <item>@string/screen_fit_image</item>
-    </string-array>
-    <string-array name="image_rotate_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
 
     <string name="sort_type">Sort type</string>
     <string name="local_sort_type">Local images</string>
@@ -70,30 +60,7 @@
     <string name="detail_resolution">Resolution</string>
     <string name="detail_date">Date</string>
     <string name="detail_size">Size</string>
+    <string name="effect">Effect</string>
+    <string name="grid_effect">Grid effect</string>
 
-    <string-array name="image_sort_entries">
-        <item>@string/sort_name</item>
-        <item>@string/sort_last_modified</item>
-        <item>@string/sort_content_length</item>
-    </string-array>
-    <string-array name="image_sort_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-
-    <string-array name="jazzy_effects" translatable="false">
-        <item>Standard</item>
-        <item>Tablet</item>
-        <item>CubeIn</item>
-        <item>CubeOut</item>
-        <item>FlipVertical</item>
-        <item>FlipHorizontal</item>
-        <item>Stack</item>
-        <item>ZoomIn</item>
-        <item>ZoomOut</item>
-        <item>RotateUp</item>
-        <item>RotateDown</item>
-        <item>Accordion</item>
-    </string-array>
 </resources>

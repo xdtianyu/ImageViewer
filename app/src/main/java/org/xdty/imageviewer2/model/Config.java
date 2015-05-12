@@ -10,6 +10,7 @@ public class Config {
     public final static String SAMBA_USERNAME = "samba_username";
     public final static String SAMBA_PASSWORD = "samba_password";
     public final static String ROTATE_TYPE = "rotate_type";
+    public final static String GRID_EFFECT = "grid_effect";
     public final static String LOCAL_SORT_TYPE = "local_sort_type";
     public final static String NETWORK_SORT_TYPE = "network_sort_type";
     public final static String FILE_EXPLORER_MODE = "file_explorer_mode";

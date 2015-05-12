@@ -37,4 +37,13 @@
             android:key="reverse_network_sort"
             android:defaultValue="false"/>
     </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/effect">
+        <ListPreference
+            android:title="@string/grid_effect"
+            android:key="grid_effect"
+            android:entries="@array/grid_effect_entries"
+            android:entryValues="@array/grid_effect_values"
+            android:defaultValue="STANDARD"/>
+    </PreferenceCategory>
 </PreferenceScreen>
