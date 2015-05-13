@@ -1,4 +1,4 @@
-package org.xdty.imageviewer2.view;
+package org.xdty.imageviewer2.view.adapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;

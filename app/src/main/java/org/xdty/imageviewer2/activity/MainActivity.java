@@ -41,7 +41,7 @@ import org.xdty.imageviewer2.model.SambaInfo;
 import org.xdty.imageviewer2.model.SortType;
 import org.xdty.imageviewer2.utils.ImageFileHelper;
 import org.xdty.imageviewer2.utils.Utils;
-import org.xdty.imageviewer2.view.GridAdapter;
+import org.xdty.imageviewer2.view.adapter.GridAdapter;
 import org.xdty.imageviewer2.view.JazzyViewPager;
 
 import java.io.BufferedInputStream;
