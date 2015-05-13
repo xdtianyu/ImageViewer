@@ -23,8 +23,7 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:support-v4:22.1.1'
+    compile 'com.android.support:recyclerview-v7:21.0.0'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.1.6'
     compile 'com.twotoasters.SectionCursorAdapter:library:2.0.1'
-    compile 'com.twotoasters.jazzylistview:library:1.2.1'
-    compile 'com.twotoasters.jazzylistview:library-recyclerview:1.2.1'
 }

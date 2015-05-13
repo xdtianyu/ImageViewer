@@ -6,22 +6,20 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.Adapter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewPropertyAnimator;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.twotoasters.jazzylistview.JazzyEffect;
 
 import org.xdty.imageviewer2.R;
 import org.xdty.imageviewer2.model.Config;
 import org.xdty.imageviewer2.model.ImageFile;
 import org.xdty.imageviewer2.utils.Utils;
+import org.xdty.imageviewer2.view.adapter.RecyclerViewAdapter.ViewHolder;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,24 +32,28 @@ import java.util.concurrent.locks.ReentrantLock;
 import jcifs.smb.SmbException;
 
 /**
- * Created by ty on 15-4-26.
+ * Created by ty on 15-5-13.
  */
-public class GridAdapter extends BaseAdapter {
+public class RecyclerViewAdapter extends Adapter<ViewHolder> {
 
-    public final static String TAG = "GridAdapter";
+    public final static String TAG = "RecyclerViewAdapter";
 
     private final ReentrantLock thumbnailLock = new ReentrantLock(true);
     private final ReentrantLock loadingLock = new ReentrantLock(true);
-    int count = 0;
+
     private Context mContext;
     private ArrayList<ImageFile> mImageList;
+
     private ArrayList<String> mThumbnailList;
+
     private File mCacheDir;
+
     private Handler handler;
+
     private Bitmap pictureBitmap;
     private Bitmap folderBitmap;
 
-    public GridAdapter(Context c, ArrayList<ImageFile> list) {
+    public RecyclerViewAdapter(Context c, ArrayList<ImageFile> list) {
         mContext = c;
         mImageList = list;
         mCacheDir = new File(c.getCacheDir(), Config.thumbnailDir);
@@ -67,44 +69,25 @@ public class GridAdapter extends BaseAdapter {
         folderBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.mipmap.folder);
     }
 
+
     @Override
-    public int getCount() {
-        return mImageList.size();
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+
+        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View view = inflater.inflate(R.layout.grid_item, parent, false);
+
+        return new ViewHolder(view);
     }
 
     @Override
-    public Object getItem(int position) {
-        return null;
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return 0;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-
-        ViewHolder viewHolder;
-
-        if (convertView == null) {
-            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.grid_item, parent, false);
-            viewHolder = new ViewHolder(convertView);
-            convertView.setTag(viewHolder);
-            Log.e(TAG, "count:" + count);
-            count++;
-        } else {
-            viewHolder = (ViewHolder) convertView.getTag();
-        }
-
+    public void onBindViewHolder(ViewHolder holder, int position) {
         try {
             ImageFile file = mImageList.get(position);
-            String name = (String) viewHolder.thumbnail.getTag();
+            String name = (String) holder.thumbnail.getTag();
             if (name == null || !name.equals(file.getName())) {
                 mThumbnailList.remove(name);
 
-                BitmapDrawable bitmapDrawable = (BitmapDrawable) viewHolder.thumbnail.getDrawable();
+                BitmapDrawable bitmapDrawable = (BitmapDrawable) holder.thumbnail.getDrawable();
 
                 if (bitmapDrawable != null) {
                     Bitmap bitmap = bitmapDrawable.getBitmap();
@@ -113,23 +96,25 @@ public class GridAdapter extends BaseAdapter {
                     }
                 }
 
-                viewHolder.thumbnail.setImageBitmap(null);
-                viewHolder.title.setText(file.getName());
-                viewHolder.thumbnail.setTag(file.getName());
-                viewHolder.position = position;
+                holder.thumbnail.setImageBitmap(null);
+                holder.title.setText(file.getName());
+                holder.thumbnail.setTag(file.getName());
 
                 mThumbnailList.add(file.getName());
-                updateThumbnail(viewHolder.thumbnail, viewHolder.lock, position, viewHolder);
+                updateThumbnail(holder.thumbnail, holder.lock, position);
             }
         } catch (IndexOutOfBoundsException e) {
             e.printStackTrace();
         }
+    }
 
-        return convertView;
+    @Override
+    public int getItemCount() {
+        return mImageList.size();
     }
 
     // generate samba file md5 and thumbnail
-    private void updateThumbnail(final ImageView imageView, final ImageView lockView, final int position, final ViewHolder viewHolder) {
+    private void updateThumbnail(final ImageView imageView, final ImageView lockView, final int position) {
 
         new Thread(new Runnable() {
             @Override
@@ -187,21 +172,18 @@ public class GridAdapter extends BaseAdapter {
 
                     // set thumbnail
                     try {
-                        if (mImageList.size() > position &&
-                                mImageList.get(position).getName().equals(fileName) &&
-                                imageView.getTag().equals(fileName)) {
-                            Log.d(TAG, "load " + fileName);
-                            final Bitmap bitmap;
-                            bitmap = BitmapFactory.decodeStream(new FileInputStream(f));
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
+                        final Bitmap bitmap;
+                        bitmap = BitmapFactory.decodeStream(new FileInputStream(f));
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (mImageList.size() > position &&
+                                        mImageList.get(position).getName().equals(fileName) &&
+                                        imageView.getTag().equals(fileName)) {
                                     imageView.setImageBitmap(bitmap);
-                                    viewHolder.animate();
                                 }
-
-                            });
-                        }
+                            }
+                        });
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     } finally {
@@ -259,7 +241,6 @@ public class GridAdapter extends BaseAdapter {
                                                 mImageList.get(position).getName().equals(fileName) &&
                                                 imageView.getTag().equals(fileName)) {
                                             imageView.setImageBitmap(bitmap);
-                                            viewHolder.animate();
                                         }
                                     }
                                 });
@@ -281,30 +262,16 @@ public class GridAdapter extends BaseAdapter {
         mThumbnailList.clear();
     }
 
-    public class ViewHolder {
-        ImageView thumbnail;
-        TextView title;
-        ImageView lock;
-        public JazzyEffect jazzyEffect;
-        public int direction;
-        int position;
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        final TextView title;
+        final ImageView lock;
+        final ImageView thumbnail;
 
-        public ViewHolder(View convertView) {
-            this.thumbnail = (ImageView) convertView.findViewById(R.id.thumbnail);
-            this.lock = (ImageView) convertView.findViewById(R.id.lock);
-            this.title = (TextView) convertView.findViewById(R.id.title);
-        }
-
-        public void animate() {
-            View view = (View)thumbnail.getParent();
-            ViewPropertyAnimator animator = view.animate()
-                    .setDuration(400)
-                    .setInterpolator(new AccelerateDecelerateInterpolator());
-            if (jazzyEffect!=null) {
-                jazzyEffect.initView(view, position, direction);
-                jazzyEffect.setupAnimation(view, position, direction, animator);
-                animator.start();
-            }
+        ViewHolder(View view) {
+            super(view);
+            thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
+            lock = (ImageView) view.findViewById(R.id.lock);
+            title = (TextView) view.findViewById(R.id.title);
         }
     }
 }
