@@ -39,38 +39,158 @@
 
     <string-array name="grid_effect_entries">
         <item>STANDARD</item>
-        <item>CARDS</item>
-        <item>CURL</item>
-        <item>FADE</item>
-        <item>FAN</item>
-        <item>FLIP</item>
-        <item>FLY</item>
-        <item>GROW</item>
-        <item>HELIX</item>
-        <item>REVERSE_FLY</item>
-        <item>SLIDE_IN</item>
-        <item>TILT</item>
-        <item>TWIRL</item>
-        <item>WAVE</item>
-        <item>ZIPPER</item>
+        <!--<item>DropOut</item>-->
+        <!--<item>Landing</item>-->
+        <!--<item>TakingOff</item>-->
+
+        <!--<item>Flash</item>-->
+        <item>Pulse</item>
+        <item>RubberBand</item>
+        <item>Shake</item>
+        <item>Swing</item>
+        <item>Wobble</item>
+        <item>Bounce</item>
+        <item>Tada</item>
+        <item>StandUp</item>
+        <item>Wave</item>
+
+        <!--<item>Hinge</item>-->
+        <item>RollIn</item>
+        <!--<item>RollOut</item>-->
+
+        <item>BounceIn</item>
+        <item>BounceInDown</item>
+        <item>BounceInLeft</item>
+        <item>BounceInRight</item>
+        <item>BounceInUp</item>
+
+        <item>FadeIn</item>
+        <item>FadeInUp</item>
+        <item>FadeInDown</item>
+        <item>FadeInLeft</item>
+        <item>FadeInRight</item>
+
+        <!--<item>FadeOut</item>-->
+        <!--<item>FadeOutDown</item>-->
+        <!--<item>FadeOutLeft</item>-->
+        <!--<item>FadeOutRight</item>-->
+        <!--<item>FadeOutUp</item>-->
+
+        <item>FlipInX</item>
+        <!--<item>FlipOutX</item>-->
+
+        <!--<item>FlipOutY</item>-->
+        <item>RotateIn</item>
+        <item>RotateInDownLeft</item>
+        <item>RotateInDownRight</item>
+        <item>RotateInUpLeft</item>
+        <item>RotateInUpRight</item>
+
+        <!--<item>RotateOut</item>-->
+        <!--<item>RotateOutDownLeft</item>-->
+        <!--<item>RotateOutDownRight</item>-->
+        <!--<item>RotateOutUpLeft</item>-->
+        <!--<item>RotateOutUpRight</item>-->
+
+        <!--<item>SlideInLeft</item>-->
+        <!--<item>SlideInRight</item>-->
+        <item>SlideInUp</item>
+        <item>SlideInDown</item>
+
+        <!--<item>SlideOutLeft</item>-->
+        <!--<item>SlideOutRight</item>-->
+        <!--<item>SlideOutUp</item>-->
+        <!--<item>SlideOutDown</item>-->
+
+        <item>ZoomIn</item>
+        <item>ZoomInDown</item>
+        <item>ZoomInLeft</item>
+        <item>ZoomInRight</item>
+        <item>ZoomInUp</item>
+
+        <!--<item>ZoomOut</item>-->
+        <!--<item>ZoomOutDown</item>-->
+        <!--<item>ZoomOutLeft</item>-->
+        <!--<item>ZoomOutRight</item>-->
+        <!--<item>ZoomOutUp</item>-->
     </string-array>
 
     <string-array name="grid_effect_values">
         <item>STANDARD</item>
-        <item>CARDS</item>
-        <item>CURL</item>
-        <item>FADE</item>
-        <item>FAN</item>
-        <item>FLIP</item>
-        <item>FLY</item>
-        <item>GROW</item>
-        <item>HELIX</item>
-        <item>REVERSE_FLY</item>
-        <item>SLIDE_IN</item>
-        <item>TILT</item>
-        <item>TWIRL</item>
-        <item>WAVE</item>
-        <item>ZIPPER</item>
+        <!--<item>DropOut</item>-->
+        <!--<item>Landing</item>-->
+        <!--<item>TakingOff</item>-->
+
+        <!--<item>Flash</item>-->
+        <item>Pulse</item>
+        <item>RubberBand</item>
+        <item>Shake</item>
+        <item>Swing</item>
+        <item>Wobble</item>
+        <item>Bounce</item>
+        <item>Tada</item>
+        <item>StandUp</item>
+        <item>Wave</item>
+
+        <!--<item>Hinge</item>-->
+        <item>RollIn</item>
+        <!--<item>RollOut</item>-->
+
+        <item>BounceIn</item>
+        <item>BounceInDown</item>
+        <item>BounceInLeft</item>
+        <item>BounceInRight</item>
+        <item>BounceInUp</item>
+
+        <item>FadeIn</item>
+        <item>FadeInUp</item>
+        <item>FadeInDown</item>
+        <item>FadeInLeft</item>
+        <item>FadeInRight</item>
+
+        <!--<item>FadeOut</item>-->
+        <!--<item>FadeOutDown</item>-->
+        <!--<item>FadeOutLeft</item>-->
+        <!--<item>FadeOutRight</item>-->
+        <!--<item>FadeOutUp</item>-->
+
+        <item>FlipInX</item>
+        <!--<item>FlipOutX</item>-->
+
+        <!--<item>FlipOutY</item>-->
+        <item>RotateIn</item>
+        <item>RotateInDownLeft</item>
+        <item>RotateInDownRight</item>
+        <item>RotateInUpLeft</item>
+        <item>RotateInUpRight</item>
+
+        <!--<item>RotateOut</item>-->
+        <!--<item>RotateOutDownLeft</item>-->
+        <!--<item>RotateOutDownRight</item>-->
+        <!--<item>RotateOutUpLeft</item>-->
+        <!--<item>RotateOutUpRight</item>-->
+
+        <!--<item>SlideInLeft</item>-->
+        <!--<item>SlideInRight</item>-->
+        <item>SlideInUp</item>
+        <item>SlideInDown</item>
+
+        <!--<item>SlideOutLeft</item>-->
+        <!--<item>SlideOutRight</item>-->
+        <!--<item>SlideOutUp</item>-->
+        <!--<item>SlideOutDown</item>-->
+
+        <item>ZoomIn</item>
+        <item>ZoomInDown</item>
+        <item>ZoomInLeft</item>
+        <item>ZoomInRight</item>
+        <item>ZoomInUp</item>
+
+        <!--<item>ZoomOut</item>-->
+        <!--<item>ZoomOutDown</item>-->
+        <!--<item>ZoomOutLeft</item>-->
+        <!--<item>ZoomOutRight</item>-->
+        <!--<item>ZoomOutUp</item>-->
     </string-array>
 
 </resources>

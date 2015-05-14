@@ -29,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.almeros.android.multitouch.RotateGestureDetector;
+import com.daimajia.androidanimations.library.Techniques;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -295,12 +296,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         isReverseLocalSort = sharedPreferences.getBoolean(Config.REVERSE_LOCAL_SORT, false);
         isReverseNetworkSort = sharedPreferences.getBoolean(Config.REVERSE_NETWORK_SORT, false);
 
-        // JazzyGridView has memory leak because of animation
-//        String effect = sharedPreferences.getString(Config.GRID_EFFECT, "STANDARD");
-//        if (effect!=null && !effect.equals("STANDARD")) {
-//            JazzyEffect jazzyEffect = GridViewEffect.build(GridViewEffect.valueOf(effect));
-//            ((JazzyGridView)gridView).setTransitionEffect(jazzyEffect);
-//        }
+        // set grid animation
+        String effect = sharedPreferences.getString(Config.GRID_EFFECT, "STANDARD");
+        gridAdapter.setAnimator(effect);
 
 
         if (!serverPath.equals(currentSambaInfo.build())) {

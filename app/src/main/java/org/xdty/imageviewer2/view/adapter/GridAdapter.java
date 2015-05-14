@@ -51,6 +51,8 @@ public class GridAdapter extends BaseAdapter {
     private Bitmap pictureBitmap;
     private Bitmap folderBitmap;
 
+    private String effect;
+
     public GridAdapter(Context c, ArrayList<ImageFile> list) {
         mContext = c;
         mImageList = list;
@@ -125,13 +127,14 @@ public class GridAdapter extends BaseAdapter {
             e.printStackTrace();
         }
 
-        // animation
-        BaseViewAnimator animator = Techniques.RubberBand.getAnimator();
-
-        try {
-            YoYo.with(animator).duration(1000).playOn(convertView);
-        } catch (NullPointerException e) {
-            e.printStackTrace();
+        // add grid animation
+        if (effect!=null && !effect.equals("STANDARD")) {
+            BaseViewAnimator animator = Techniques.valueOf(effect).getAnimator();
+            try {
+                YoYo.with(animator).duration(400).playOn(convertView);
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
         }
 
         return convertView;
@@ -286,6 +289,10 @@ public class GridAdapter extends BaseAdapter {
 
     public void clearThumbnailList() {
         mThumbnailList.clear();
+    }
+
+    public void setAnimator(String effect) {
+        this.effect = effect;
     }
 
     class ViewHolder {
