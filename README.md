@@ -22,6 +22,8 @@ ImageViewer is an open source image viewer for LAN/WAN's samba shared photos.
 
 [android-gif-drawable](https://github.com/koral--/android-gif-drawable): Views and Drawable for animated GIFs in Android
 
+[AndroidViewAnimations](https://github.com/daimajia/AndroidViewAnimations): A collection of android animation effects
+
 ### License ###
 
     Copyright 2015 xdtianyu

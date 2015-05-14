@@ -115,7 +115,7 @@
         <!--<item>ZoomOutUp</item>-->
     </string-array>
 
-    <string-array name="grid_effect_values">
+    <string-array name="grid_effect_values" translatable="false">
         <item>Standard</item>
         <!--<item>DropOut</item>-->
         <!--<item>Landing</item>-->
@@ -197,7 +197,7 @@
         <item>@string/normal</item>
         <item>@string/slow</item>
     </string-array>
-    <string-array name="grid_effect_duration_values" >
+    <string-array name="grid_effect_duration_values" translatable="false">
         <item>300</item>
         <item>450</item>
         <item>600</item>
@@ -216,7 +216,7 @@
         <item>@string/rotate_down</item>
         <item>@string/accordion</item>
     </string-array>
-    <string-array name="viewpager_effect_values">
+    <string-array name="viewpager_effect_values" translatable="false">
         <item>Standard</item>
         <item>Tablet</item>
         <item>CubeIn</item>
