@@ -1,3 +1,11 @@
+version 1.5.0 (2015-05-14)
+
+1. Fix empty screen when quick click
+2. Fix image loading again after scolling back
+3. Add image viewer animation effects
+4. Add image list animation effects
+5. Add animation effects settings
+
 version 1.4.1 (2015-05-11)
 
 1. Modified package name
