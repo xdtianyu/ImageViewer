@@ -47,7 +47,7 @@
     <string name="detail_type">类型</string>
     <string name="effect">动画特效</string>
     <string name="grid_effect">列表特效</string>
-    <string name="grid_effect_duration">列表特效时长</string>
+    <string name="grid_effect_duration">列表特效速度</string>
     <string name="bounce">弹跳</string>
     <string name="bounce_in">弹跳进入</string>
     <string name="bounce_in_down">向下弹跳进入</string>
