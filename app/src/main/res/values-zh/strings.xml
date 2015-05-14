@@ -55,10 +55,10 @@
     <string name="bounce_in_right">向右弹跳进入</string>
     <string name="bounce_in_up">向上弹跳进入</string>
     <string name="fade_in">淡入</string>
-    <string name="fade_in_down">向下淡入</string>
-    <string name="fade_in_left">向左淡入</string>
-    <string name="fade_in_right">向右淡入</string>
-    <string name="fade_in_up">向上淡入</string>
+    <string name="fade_in_down">由下淡入</string>
+    <string name="fade_in_left">由左淡入</string>
+    <string name="fade_in_right">由右淡入</string>
+    <string name="fade_in_up">由上淡入</string>
     <string name="flip_in_x">X轴翻转</string>
     <string name="pulse">脉冲</string>
     <string name="roll_in">滚动进入</string>
