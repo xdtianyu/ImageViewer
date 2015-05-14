@@ -40,11 +40,17 @@
     <PreferenceCategory
         android:title="@string/effect">
         <ListPreference
+            android:title="@string/viewpager_effect"
+            android:key="viewpager_effect"
+            android:entries="@array/viewpager_effect_entries"
+            android:entryValues="@array/viewpager_effect_values"
+            android:defaultValue="Standard"/>
+        <ListPreference
             android:title="@string/grid_effect"
             android:key="grid_effect"
             android:entries="@array/grid_effect_entries"
             android:entryValues="@array/grid_effect_values"
-            android:defaultValue="STANDARD"/>
+            android:defaultValue="Standard"/>
         <ListPreference
             android:title="@string/grid_effect_duration"
             android:key="grid_effect_duration"

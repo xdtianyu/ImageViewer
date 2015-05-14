@@ -129,7 +129,6 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
         mViewPager.setOnPageChangeListener(MainActivity.this);
         mViewPager.setOffscreenPageLimit(2);
-        mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.Standard);
 
         // handle only single tap event, show or hide systemUI
         mClickDetector = new android.view.GestureDetector(this,
@@ -296,11 +295,17 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         isReverseNetworkSort = sharedPreferences.getBoolean(Config.REVERSE_NETWORK_SORT, false);
 
         // set grid animation
-        String effect = sharedPreferences.getString(Config.GRID_EFFECT, "STANDARD");
-        String duration = sharedPreferences.getString(Config.GRID_EFFECT_DURATION, "450");
-        gridAdapter.setAnimator(effect);
-        gridAdapter.setAnimationDuration(Integer.parseInt(duration));
+        String gridEffect = sharedPreferences.getString(Config.GRID_EFFECT, "Standard");
+        String gridEffectDuration = sharedPreferences.getString(Config.GRID_EFFECT_DURATION, "450");
+        gridAdapter.setAnimator(gridEffect);
+        gridAdapter.setAnimationDuration(Integer.parseInt(gridEffectDuration));
 
+        // set viewpager animation
+        String viewpagerEffect = sharedPreferences.getString(Config.VIEWPAGER_EFFECT, "Standard");
+        if (viewpagerEffect != null) {
+            // Fixme: need set nearby pagers effect too.
+            mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.valueOf(viewpagerEffect));
+        }
 
         if (!serverPath.equals(currentSambaInfo.build())) {
             mCurrentPath = Config.ROOT_PATH;

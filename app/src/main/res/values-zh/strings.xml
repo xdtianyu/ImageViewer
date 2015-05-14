@@ -84,4 +84,15 @@
     <string name="normal">正常</string>
     <string name="quick">较快</string>
     <string name="slow">较慢</string>
+    <string name="accordion">手风琴</string>
+    <string name="cube_in">立方内部</string>
+    <string name="cube_out">立方外部</string>
+    <string name="flip_horizontal">水平翻转</string>
+    <string name="flip_vertical">垂直翻转</string>
+    <string name="rotate_down">向下旋转</string>
+    <string name="rotate_up">向上旋转</string>
+    <string name="stack">堆叠</string>
+    <string name="tablet">滑片</string>
+    <string name="viewpager_effect">图片滑动特效</string>
+    <string name="zoom_out">缩小</string>
 </resources>

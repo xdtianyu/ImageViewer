@@ -116,7 +116,7 @@
     </string-array>
 
     <string-array name="grid_effect_values">
-        <item>STANDARD</item>
+        <item>Standard</item>
         <!--<item>DropOut</item>-->
         <!--<item>Landing</item>-->
         <!--<item>TakingOff</item>-->
@@ -202,41 +202,32 @@
         <item>450</item>
         <item>600</item>
     </string-array>
-
-    <string name="standard">Stardard</string>
-    <string name="pulse">Pulse</string>
-    <string name="rubber_band">Rubber band</string>
-    <string name="shake">Shake</string>
-    <string name="swing">Swing</string>
-    <string name="wobble">Wobble</string>
-    <string name="bounce">Bounce</string>
-    <string name="tada">Tada</string>
-    <string name="stand_up">Stand up</string>
-    <string name="wave">Wave</string>
-    <string name="roll_in">Roll in</string>
-    <string name="bounce_in">Bounce in</string>
-    <string name="bounce_in_down">Bounce in down</string>
-    <string name="bounce_in_left">Bounce in left</string>
-    <string name="bounce_in_right">Bounce in right</string>
-    <string name="bounce_in_up">Bounce in up</string>
-    <string name="fade_in">Fade in</string>
-    <string name="fade_in_up">Fade in up</string>
-    <string name="fade_in_down">Fade in down</string>
-    <string name="fade_in_left">Fade in left</string>
-    <string name="fade_in_right">Fade in right</string>
-    <string name="flip_in_x">Flip in X</string>
-    <string name="rotate_in">Rotate in</string>
-    <string name="rotate_in_down_left">Rotate in down left</string>
-    <string name="rotate_in_down_right">Rotate in down right</string>
-    <string name="rotate_in_up_left">Rotate in up left</string>
-    <string name="rotate_in_up_right">Rotate in up right</string>
-    <string name="slide_in_down">Slide in down</string>
-    <string name="zoom_in">Zoom in</string>
-    <string name="zoom_in_down">Zoom in down</string>
-    <string name="zoom_in_left">Zoom in left</string>
-    <string name="zoom_in_right">Zoom in right</string>
-    <string name="zoom_in_up">Zoom in up</string>
-    <string name="quick">Quick</string>
-    <string name="normal">Normal</string>
-    <string name="slow">Slow</string>
+    <string-array name="viewpager_effect_entries">
+        <item>@string/standard</item>
+        <item>@string/tablet</item>
+        <item>@string/cube_in</item>
+        <item>@string/cube_out</item>
+        <item>@string/flip_vertical</item>
+        <item>@string/flip_horizontal</item>
+        <item>@string/stack</item>
+        <item>@string/zoom_in</item>
+        <item>@string/zoom_out</item>
+        <item>@string/rotate_up</item>
+        <item>@string/rotate_down</item>
+        <item>@string/accordion</item>
+    </string-array>
+    <string-array name="viewpager_effect_values">
+        <item>Standard</item>
+        <item>Tablet</item>
+        <item>CubeIn</item>
+        <item>CubeOut</item>
+        <item>FlipVertical</item>
+        <item>FlipHorizontal</item>
+        <item>Stack</item>
+        <item>ZoomIn</item>
+        <item>ZoomOut</item>
+        <item>RotateUp</item>
+        <item>RotateDown</item>
+        <item>Accordion</item>
+    </string-array>
 </resources>

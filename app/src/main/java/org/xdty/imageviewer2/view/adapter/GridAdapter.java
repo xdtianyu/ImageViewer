@@ -129,7 +129,7 @@ public class GridAdapter extends BaseAdapter {
         }
 
         // add grid animation
-        if (animationEffect !=null && !animationEffect.equals("STANDARD")) {
+        if (animationEffect !=null && !animationEffect.equals("Standard")) {
             BaseViewAnimator animator = Techniques.valueOf(animationEffect).getAnimator();
             try {
                 YoYo.with(animator).duration(animationDuration).playOn(convertView);
