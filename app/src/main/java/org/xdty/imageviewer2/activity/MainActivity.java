@@ -24,19 +24,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.almeros.android.multitouch.RotateGestureDetector;
-import com.twotoasters.jazzylistview.JazzyEffect;
-import com.twotoasters.jazzylistview.JazzyGridView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.xdty.imageviewer2.R;
 import org.xdty.imageviewer2.model.Config;
-import org.xdty.imageviewer2.model.GridViewEffect;
 import org.xdty.imageviewer2.model.ImageFile;
 import org.xdty.imageviewer2.model.RotateType;
 import org.xdty.imageviewer2.model.SambaInfo;
@@ -84,7 +82,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private HashMap<Integer, Integer> rotationMap = new HashMap<>();
     private HashMap<Integer, Boolean> orientationMap = new HashMap<>();
     private Handler handler = new Handler();
-    private JazzyGridView gridView;
+    private GridView gridView;
     private int mGridPosition = -1;
     private RotateType rotateType = RotateType.ORIGINAL;
     private SortType localSortType = SortType.FILE_NAME;
@@ -124,7 +122,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         excludeList.add("tmp");
 
         emptyText = (TextView) findViewById(R.id.empty_dir);
-        gridView = (JazzyGridView) findViewById(R.id.gridView);
+        gridView = (GridView) findViewById(R.id.gridView);
         gridAdapter = new GridAdapter(this, mImageFileList);
         gridView.setAdapter(gridAdapter);
 
@@ -298,11 +296,11 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         isReverseNetworkSort = sharedPreferences.getBoolean(Config.REVERSE_NETWORK_SORT, false);
 
         // JazzyGridView has memory leak because of animation
-        String effect = sharedPreferences.getString(Config.GRID_EFFECT, "STANDARD");
-        if (effect!=null && !effect.equals("STANDARD")) {
-            JazzyEffect jazzyEffect = GridViewEffect.build(GridViewEffect.valueOf(effect));
-            ((JazzyGridView)gridView).setTransitionEffect(jazzyEffect);
-        }
+//        String effect = sharedPreferences.getString(Config.GRID_EFFECT, "STANDARD");
+//        if (effect!=null && !effect.equals("STANDARD")) {
+//            JazzyEffect jazzyEffect = GridViewEffect.build(GridViewEffect.valueOf(effect));
+//            ((JazzyGridView)gridView).setTransitionEffect(jazzyEffect);
+//        }
 
 
         if (!serverPath.equals(currentSambaInfo.build())) {

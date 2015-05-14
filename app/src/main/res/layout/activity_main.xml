@@ -7,7 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         >
-        <com.twotoasters.jazzylistview.JazzyGridView
+        <GridView
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:paddingLeft="@dimen/grid_padding"

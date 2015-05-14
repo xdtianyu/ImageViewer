@@ -10,13 +10,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewPropertyAnimator;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.twotoasters.jazzylistview.JazzyEffect;
+import com.daimajia.androidanimations.library.BaseViewAnimator;
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
 
 import org.xdty.imageviewer2.R;
 import org.xdty.imageviewer2.model.Config;
@@ -125,6 +125,15 @@ public class GridAdapter extends BaseAdapter {
             e.printStackTrace();
         }
 
+        // animation
+        BaseViewAnimator animator = Techniques.RubberBand.getAnimator();
+
+        try {
+            YoYo.with(animator).duration(1000).playOn(convertView);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+
         return convertView;
     }
 
@@ -197,7 +206,6 @@ public class GridAdapter extends BaseAdapter {
                                 @Override
                                 public void run() {
                                     imageView.setImageBitmap(bitmap);
-                                    viewHolder.animate();
                                 }
 
                             });
@@ -259,7 +267,6 @@ public class GridAdapter extends BaseAdapter {
                                                 mImageList.get(position).getName().equals(fileName) &&
                                                 imageView.getTag().equals(fileName)) {
                                             imageView.setImageBitmap(bitmap);
-                                            viewHolder.animate();
                                         }
                                     }
                                 });
@@ -281,30 +288,16 @@ public class GridAdapter extends BaseAdapter {
         mThumbnailList.clear();
     }
 
-    public class ViewHolder {
+    class ViewHolder {
         ImageView thumbnail;
         TextView title;
         ImageView lock;
-        public JazzyEffect jazzyEffect;
-        public int direction;
         int position;
 
         public ViewHolder(View convertView) {
             this.thumbnail = (ImageView) convertView.findViewById(R.id.thumbnail);
             this.lock = (ImageView) convertView.findViewById(R.id.lock);
             this.title = (TextView) convertView.findViewById(R.id.title);
-        }
-
-        public void animate() {
-            View view = (View)thumbnail.getParent();
-            ViewPropertyAnimator animator = view.animate()
-                    .setDuration(400)
-                    .setInterpolator(new AccelerateDecelerateInterpolator());
-            if (jazzyEffect!=null) {
-                jazzyEffect.initView(view, position, direction);
-                jazzyEffect.setupAnimation(view, position, direction, animator);
-                animator.start();
-            }
         }
     }
 }
