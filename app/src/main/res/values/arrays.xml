@@ -38,37 +38,37 @@
     </string-array>
 
     <string-array name="grid_effect_entries">
-        <item>STANDARD</item>
+        <item>@string/standard</item>
         <!--<item>DropOut</item>-->
         <!--<item>Landing</item>-->
         <!--<item>TakingOff</item>-->
 
         <!--<item>Flash</item>-->
-        <item>Pulse</item>
-        <item>RubberBand</item>
-        <item>Shake</item>
-        <item>Swing</item>
-        <item>Wobble</item>
-        <item>Bounce</item>
-        <item>Tada</item>
-        <item>StandUp</item>
-        <item>Wave</item>
+        <item>@string/pulse</item>
+        <item>@string/rubber_band</item>
+        <item>@string/shake</item>
+        <item>@string/swing</item>
+        <item>@string/wobble</item>
+        <item>@string/bounce</item>
+        <item>@string/tada</item>
+        <item>@string/stand_up</item>
+        <item>@string/wave</item>
 
         <!--<item>Hinge</item>-->
-        <item>RollIn</item>
+        <item>@string/roll_in</item>
         <!--<item>RollOut</item>-->
 
-        <item>BounceIn</item>
-        <item>BounceInDown</item>
-        <item>BounceInLeft</item>
-        <item>BounceInRight</item>
-        <item>BounceInUp</item>
+        <item>@string/bounce_in</item>
+        <item>@string/bounce_in_down</item>
+        <item>@string/bounce_in_left</item>
+        <item>@string/bounce_in_right</item>
+        <item>@string/bounce_in_up</item>
 
-        <item>FadeIn</item>
-        <item>FadeInUp</item>
-        <item>FadeInDown</item>
-        <item>FadeInLeft</item>
-        <item>FadeInRight</item>
+        <item>@string/fade_in</item>
+        <item>@string/fade_in_up</item>
+        <item>@string/fade_in_down</item>
+        <item>@string/fade_in_left</item>
+        <item>@string/fade_in_right</item>
 
         <!--<item>FadeOut</item>-->
         <!--<item>FadeOutDown</item>-->
@@ -76,15 +76,15 @@
         <!--<item>FadeOutRight</item>-->
         <!--<item>FadeOutUp</item>-->
 
-        <item>FlipInX</item>
+        <item>@string/flip_in_x</item>
         <!--<item>FlipOutX</item>-->
 
         <!--<item>FlipOutY</item>-->
-        <item>RotateIn</item>
-        <item>RotateInDownLeft</item>
-        <item>RotateInDownRight</item>
-        <item>RotateInUpLeft</item>
-        <item>RotateInUpRight</item>
+        <item>@string/rotate_in</item>
+        <item>@string/rotate_in_down_left</item>
+        <item>@string/rotate_in_down_right</item>
+        <item>@string/rotate_in_up_left</item>
+        <item>@string/rotate_in_up_right</item>
 
         <!--<item>RotateOut</item>-->
         <!--<item>RotateOutDownLeft</item>-->
@@ -94,19 +94,19 @@
 
         <!--<item>SlideInLeft</item>-->
         <!--<item>SlideInRight</item>-->
-        <item>SlideInUp</item>
-        <item>SlideInDown</item>
+        <!--<item>SlideInUp</item>-->
+        <item>@string/slide_in_down</item>
 
         <!--<item>SlideOutLeft</item>-->
         <!--<item>SlideOutRight</item>-->
         <!--<item>SlideOutUp</item>-->
         <!--<item>SlideOutDown</item>-->
 
-        <item>ZoomIn</item>
-        <item>ZoomInDown</item>
-        <item>ZoomInLeft</item>
-        <item>ZoomInRight</item>
-        <item>ZoomInUp</item>
+        <item>@string/zoom_in</item>
+        <item>@string/zoom_in_down</item>
+        <item>@string/zoom_in_left</item>
+        <item>@string/zoom_in_right</item>
+        <item>@string/zoom_in_up</item>
 
         <!--<item>ZoomOut</item>-->
         <!--<item>ZoomOutDown</item>-->
@@ -172,7 +172,7 @@
 
         <!--<item>SlideInLeft</item>-->
         <!--<item>SlideInRight</item>-->
-        <item>SlideInUp</item>
+        <!--<item>SlideInUp</item>-->
         <item>SlideInDown</item>
 
         <!--<item>SlideOutLeft</item>-->
@@ -192,5 +192,51 @@
         <!--<item>ZoomOutRight</item>-->
         <!--<item>ZoomOutUp</item>-->
     </string-array>
+    <string-array name="grid_effect_duration_entries" >
+        <item>@string/quick</item>
+        <item>@string/normal</item>
+        <item>@string/slow</item>
+    </string-array>
+    <string-array name="grid_effect_duration_values" >
+        <item>300</item>
+        <item>450</item>
+        <item>600</item>
+    </string-array>
 
+    <string name="standard">Stardard</string>
+    <string name="pulse">Pulse</string>
+    <string name="rubber_band">Rubber band</string>
+    <string name="shake">Shake</string>
+    <string name="swing">Swing</string>
+    <string name="wobble">Wobble</string>
+    <string name="bounce">Bounce</string>
+    <string name="tada">Tada</string>
+    <string name="stand_up">Stand up</string>
+    <string name="wave">Wave</string>
+    <string name="roll_in">Roll in</string>
+    <string name="bounce_in">Bounce in</string>
+    <string name="bounce_in_down">Bounce in down</string>
+    <string name="bounce_in_left">Bounce in left</string>
+    <string name="bounce_in_right">Bounce in right</string>
+    <string name="bounce_in_up">Bounce in up</string>
+    <string name="fade_in">Fade in</string>
+    <string name="fade_in_up">Fade in up</string>
+    <string name="fade_in_down">Fade in down</string>
+    <string name="fade_in_left">Fade in left</string>
+    <string name="fade_in_right">Fade in right</string>
+    <string name="flip_in_x">Flip in X</string>
+    <string name="rotate_in">Rotate in</string>
+    <string name="rotate_in_down_left">Rotate in down left</string>
+    <string name="rotate_in_down_right">Rotate in down right</string>
+    <string name="rotate_in_up_left">Rotate in up left</string>
+    <string name="rotate_in_up_right">Rotate in up right</string>
+    <string name="slide_in_down">Slide in down</string>
+    <string name="zoom_in">Zoom in</string>
+    <string name="zoom_in_down">Zoom in down</string>
+    <string name="zoom_in_left">Zoom in left</string>
+    <string name="zoom_in_right">Zoom in right</string>
+    <string name="zoom_in_up">Zoom in up</string>
+    <string name="quick">Quick</string>
+    <string name="normal">Normal</string>
+    <string name="slow">Slow</string>
 </resources>

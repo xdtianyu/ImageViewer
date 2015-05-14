@@ -29,7 +29,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.almeros.android.multitouch.RotateGestureDetector;
-import com.daimajia.androidanimations.library.Techniques;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -298,7 +297,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         // set grid animation
         String effect = sharedPreferences.getString(Config.GRID_EFFECT, "STANDARD");
+        String duration = sharedPreferences.getString(Config.GRID_EFFECT_DURATION, "450");
         gridAdapter.setAnimator(effect);
+        gridAdapter.setAnimationDuration(Integer.parseInt(duration));
 
 
         if (!serverPath.equals(currentSambaInfo.build())) {

@@ -62,5 +62,6 @@
     <string name="detail_size">Size</string>
     <string name="effect">Effect</string>
     <string name="grid_effect">Grid effect</string>
+    <string name="grid_effect_duration">Grid effect duration</string>
 
 </resources>

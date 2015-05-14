@@ -51,7 +51,8 @@ public class GridAdapter extends BaseAdapter {
     private Bitmap pictureBitmap;
     private Bitmap folderBitmap;
 
-    private String effect;
+    private String animationEffect;
+    private int animationDuration = 450;
 
     public GridAdapter(Context c, ArrayList<ImageFile> list) {
         mContext = c;
@@ -128,10 +129,10 @@ public class GridAdapter extends BaseAdapter {
         }
 
         // add grid animation
-        if (effect!=null && !effect.equals("STANDARD")) {
-            BaseViewAnimator animator = Techniques.valueOf(effect).getAnimator();
+        if (animationEffect !=null && !animationEffect.equals("STANDARD")) {
+            BaseViewAnimator animator = Techniques.valueOf(animationEffect).getAnimator();
             try {
-                YoYo.with(animator).duration(400).playOn(convertView);
+                YoYo.with(animator).duration(animationDuration).playOn(convertView);
             } catch (NullPointerException e) {
                 e.printStackTrace();
             }
@@ -292,7 +293,11 @@ public class GridAdapter extends BaseAdapter {
     }
 
     public void setAnimator(String effect) {
-        this.effect = effect;
+        this.animationEffect = effect;
+    }
+
+    public void setAnimationDuration(int duration) {
+        this.animationDuration = duration;
     }
 
     class ViewHolder {

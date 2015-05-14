@@ -45,5 +45,11 @@
             android:entries="@array/grid_effect_entries"
             android:entryValues="@array/grid_effect_values"
             android:defaultValue="STANDARD"/>
+        <ListPreference
+            android:title="@string/grid_effect_duration"
+            android:key="grid_effect_duration"
+            android:entries="@array/grid_effect_duration_entries"
+            android:entryValues="@array/grid_effect_duration_values"
+            android:defaultValue="450"/>
     </PreferenceCategory>
 </PreferenceScreen>
