@@ -6,6 +6,7 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
+import android.support.v4.util.LruCache;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,6 +55,8 @@ public class GridAdapter extends BaseAdapter {
     private String animationEffect;
     private int animationDuration = 450;
 
+    private LruCache<String, Bitmap> mMemoryCache;
+
     public GridAdapter(Context c, ArrayList<ImageFile> list) {
         mContext = c;
         mImageList = list;
@@ -68,6 +71,35 @@ public class GridAdapter extends BaseAdapter {
 
         pictureBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.mipmap.picture);
         folderBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.mipmap.folder);
+
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+
+        // Use 1/8th of the available memory for this memory cache.
+        final int cacheSize = maxMemory / 8;
+
+        mMemoryCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap bitmap) {
+                // The cache size will be measured in kilobytes rather than
+                // number of items.
+                return bitmap.getByteCount() / 1024;
+            }
+        };
+    }
+
+    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+        if (getBitmapFromMemCache(key) == null) {
+            mMemoryCache.put(key, bitmap);
+        }
+    }
+
+    public Bitmap getBitmapFromMemCache(String key) {
+        return mMemoryCache.get(key);
+    }
+
+    public Bitmap getClonedBitmapFromMemCache(String key) {
+        Bitmap bitmap = mMemoryCache.get(key);
+        return bitmap.copy(bitmap.getConfig(), true);
     }
 
     @Override
@@ -77,12 +109,12 @@ public class GridAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        return null;
+        return mImageList.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return position;
     }
 
     @Override
@@ -104,7 +136,8 @@ public class GridAdapter extends BaseAdapter {
         try {
             ImageFile file = mImageList.get(position);
             String name = (String) viewHolder.thumbnail.getTag();
-            if (name == null || !name.equals(file.getName())) {
+
+            if (name == null || (!name.equals(file.getName()))) {
                 mThumbnailList.remove(name);
 
                 BitmapDrawable bitmapDrawable = (BitmapDrawable) viewHolder.thumbnail.getDrawable();
@@ -122,14 +155,20 @@ public class GridAdapter extends BaseAdapter {
                 viewHolder.position = position;
 
                 mThumbnailList.add(file.getName());
-                updateThumbnail(viewHolder.thumbnail, viewHolder.lock, position, viewHolder);
+
+                final Bitmap bitmap = getBitmapFromMemCache(file.getName());
+                if (bitmap != null) {
+                    viewHolder.thumbnail.setImageBitmap(getClonedBitmapFromMemCache(file.getName()));
+                } else {
+                    updateThumbnail(viewHolder.thumbnail, viewHolder.lock, position, viewHolder);
+                }
             }
         } catch (IndexOutOfBoundsException e) {
             e.printStackTrace();
         }
 
         // add grid animation
-        if (animationEffect !=null && !animationEffect.equals("Standard")) {
+        if (animationEffect != null && !animationEffect.equals("Standard")) {
             BaseViewAnimator animator = Techniques.valueOf(animationEffect).getAnimator();
             try {
                 YoYo.with(animator).duration(animationDuration).playOn(convertView);
@@ -209,6 +248,9 @@ public class GridAdapter extends BaseAdapter {
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
+                                    if (position == 0) {
+                                        addBitmapToMemoryCache(fileName, bitmap.copy(bitmap.getConfig(), true));
+                                    }
                                     imageView.setImageBitmap(bitmap);
                                 }
 
@@ -289,6 +331,7 @@ public class GridAdapter extends BaseAdapter {
     }
 
     public void clearThumbnailList() {
+        mMemoryCache.evictAll();
         mThumbnailList.clear();
     }
 
