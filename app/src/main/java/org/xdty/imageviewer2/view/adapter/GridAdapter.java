@@ -248,7 +248,7 @@ public class GridAdapter extends BaseAdapter {
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if (position == 0) {
+                                    if (position == 0 && bitmap != null) {
                                         addBitmapToMemoryCache(fileName, bitmap.copy(bitmap.getConfig(), true));
                                     }
                                     imageView.setImageBitmap(bitmap);
