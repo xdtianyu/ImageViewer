@@ -219,6 +219,7 @@ public class ImageFile {
         String name = getName().toLowerCase();
         if (name.endsWith(".png") ||
                 name.endsWith(".jpg") ||
+                name.endsWith(".jpeg") ||
                 name.endsWith(".bmp") ||
                 name.endsWith(".gif")) {
             return true;
