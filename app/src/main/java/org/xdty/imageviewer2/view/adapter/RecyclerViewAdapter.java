@@ -53,9 +53,12 @@ public class RecyclerViewAdapter extends Adapter<ViewHolder> {
     private Bitmap pictureBitmap;
     private Bitmap folderBitmap;
 
-    public RecyclerViewAdapter(Context c, ArrayList<ImageFile> list) {
+    private OnItemClickListener mListener;
+
+    public RecyclerViewAdapter(Context c, ArrayList<ImageFile> list, OnItemClickListener listener) {
         mContext = c;
         mImageList = list;
+        mListener = listener;
         mCacheDir = new File(c.getCacheDir(), Config.thumbnailDir);
         if (!mCacheDir.exists()) {
             if (!mCacheDir.mkdirs()) {
@@ -69,19 +72,25 @@ public class RecyclerViewAdapter extends Adapter<ViewHolder> {
         folderBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.mipmap.folder);
     }
 
-
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(
+                Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.grid_item, parent, false);
 
-        return new ViewHolder(view);
+        return new ViewHolder(view, mListener);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
+
+        mListener.onBindViewHolder(position);
+
         try {
+
+            holder.position = position;
+
             ImageFile file = mImageList.get(position);
             String name = (String) holder.thumbnail.getTag();
             if (name == null || !name.equals(file.getName())) {
@@ -114,7 +123,8 @@ public class RecyclerViewAdapter extends Adapter<ViewHolder> {
     }
 
     // generate samba file md5 and thumbnail
-    private void updateThumbnail(final ImageView imageView, final ImageView lockView, final int position) {
+    private void updateThumbnail(final ImageView imageView, final ImageView lockView,
+            final int position) {
 
         new Thread(new Runnable() {
             @Override
@@ -178,8 +188,8 @@ public class RecyclerViewAdapter extends Adapter<ViewHolder> {
                             @Override
                             public void run() {
                                 if (mImageList.size() > position &&
-                                        mImageList.get(position).getName().equals(fileName) &&
-                                        imageView.getTag().equals(fileName)) {
+                                    mImageList.get(position).getName().equals(fileName) &&
+                                    imageView.getTag().equals(fileName)) {
                                     imageView.setImageBitmap(bitmap);
                                 }
                             }
@@ -238,8 +248,8 @@ public class RecyclerViewAdapter extends Adapter<ViewHolder> {
                                     @Override
                                     public void run() {
                                         if (mImageList.size() > position &&
-                                                mImageList.get(position).getName().equals(fileName) &&
-                                                imageView.getTag().equals(fileName)) {
+                                            mImageList.get(position).getName().equals(fileName) &&
+                                            imageView.getTag().equals(fileName)) {
                                             imageView.setImageBitmap(bitmap);
                                         }
                                     }
@@ -262,16 +272,37 @@ public class RecyclerViewAdapter extends Adapter<ViewHolder> {
         mThumbnailList.clear();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        final TextView title;
-        final ImageView lock;
-        final ImageView thumbnail;
+    public interface OnItemClickListener {
+        void onItemClicked(View view, int position);
+        void onBindViewHolder(int position);
+    }
 
-        ViewHolder(View view) {
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        int position = 0;
+
+        TextView title;
+        ImageView lock;
+        ImageView thumbnail;
+        OnItemClickListener listener;
+
+        ViewHolder(View view, OnItemClickListener listener) {
             super(view);
             thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
             lock = (ImageView) view.findViewById(R.id.lock);
             title = (TextView) view.findViewById(R.id.title);
+
+            this.listener = listener;
+
+            thumbnail.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (v instanceof ImageView) {
+                // TODO: return file uri here
+                listener.onItemClicked(v, position);
+            }
         }
     }
 }

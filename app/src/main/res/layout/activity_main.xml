@@ -1,45 +1,55 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" tools:context=".MainActivity"
-    android:background="@android:color/black">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:recyclerviewfastscroller="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    tools:context=".MainActivity">
 
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        >
-        <GridView
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:paddingLeft="@dimen/grid_padding"
-            android:paddingRight="@dimen/grid_padding"
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:paddingTop="@dimen/grid_padding_top"
             android:paddingBottom="@dimen/grid_padding_bottom"
-            android:verticalSpacing="@dimen/grid_item_padding"
-            android:horizontalSpacing="@dimen/grid_item_padding"
-            android:clipToPadding="false"
-            android:drawSelectorOnTop="true"
-            android:id="@+id/gridView"
-            android:numColumns="3"/>
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent">
-            <org.xdty.imageviewer2.view.JazzyViewPager
-                android:id="@+id/viewpager"
-                android:background="@android:color/black"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="gone"
-                >
-            </org.xdty.imageviewer2.view.JazzyViewPager>
-        </LinearLayout>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/empty_dir"
-            android:layout_gravity="center"
-            android:focusable="false"
-            android:clickable="false"
-            android:visibility="gone"
-            android:text="@string/empty_dir"/>
-    </FrameLayout>
-</RelativeLayout>
+            android:clipToPadding="false"/>
+
+        <xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller
+            android:id="@+id/fast_scroller"
+            android:layout_marginTop="@dimen/grid_padding_top"
+            android:layout_marginBottom="@dimen/grid_padding_bottom"
+            android:layout_width="30dp"
+            android:layout_height="fill_parent"
+            android:layout_alignParentRight="true"
+            recyclerviewfastscroller:rfs_barColor="@color/fastScrollBarColor"
+            recyclerviewfastscroller:rfs_handleBackground="@drawable/fast_scroller_handle_rounded"
+            tools:ignore="RtlHardcoded" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <org.xdty.imageviewer2.view.JazzyViewPager
+            android:id="@+id/viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/empty_dir"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:clickable="false"
+        android:focusable="false"
+        android:text="@string/empty_dir"
+        android:visibility="gone" />
+
+</FrameLayout>

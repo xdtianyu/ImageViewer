@@ -16,19 +16,22 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.GridView;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.almeros.android.multitouch.RotateGestureDetector;
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
+import com.nineoldandroids.animation.Animator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,7 +45,8 @@ import org.xdty.imageviewer2.model.SortType;
 import org.xdty.imageviewer2.utils.ImageFileHelper;
 import org.xdty.imageviewer2.utils.Utils;
 import org.xdty.imageviewer2.view.JazzyViewPager;
-import org.xdty.imageviewer2.view.adapter.GridAdapter;
+import org.xdty.imageviewer2.view.adapter.RecyclerViewAdapter;
+import org.xdty.imageviewer2.view.adapter.RecyclerViewAdapter.OnItemClickListener;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -61,19 +65,21 @@ import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import pl.droidsonroids.gif.GifDrawable;
 import uk.co.senab.photoview.PhotoView;
+import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
 import static org.xdty.imageviewer2.utils.Utils.RotateBitmap;
 
 
-public class MainActivity extends Activity implements ViewPager.OnPageChangeListener {
+public class MainActivity extends Activity
+        implements ViewPager.OnPageChangeListener, OnItemClickListener {
 
     public final static String TAG = "MainActivity";
-
+    private final static int SCROLLER_HIDE_DELAY = 3000;
     private final ReentrantLock imageLoadLock = new ReentrantLock(true);
     private TextView emptyText;
     private ArrayList<ImageFile> mImageFileList = new ArrayList<>();
     private ArrayList<ImageFile> mImageList = new ArrayList<>();
-    private GridAdapter gridAdapter;
+    private RecyclerViewAdapter recyclerViewAdapter;
     private ArrayDeque<PathInfo> mPathStack = new ArrayDeque<>();
     private String mCurrentPath = Config.ROOT_PATH;
     private JazzyViewPager mViewPager;
@@ -82,7 +88,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private HashMap<Integer, Integer> rotationMap = new HashMap<>();
     private HashMap<Integer, Boolean> orientationMap = new HashMap<>();
     private Handler handler = new Handler();
-    private GridView gridView;
+    private RecyclerView recyclerView;
     private int mGridPosition = -1;
     private RotateType rotateType = RotateType.ORIGINAL;
     private SortType localSortType = SortType.FILE_NAME;
@@ -99,6 +105,13 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private ArrayList<SambaInfo> sambaInfoList = new ArrayList<>();
     private int lastPagePosition = -1;
     private AlertDialog detailDialog;
+    private GridLayoutManager gridLayoutManager;
+    private Handler mHandler;
+    private FrameLayout scrollerContainer;
+    private Animator.AnimatorListener scrollerAnimatorListener;
+    private Runnable scrollerHideRunnable;
+    private long lastScrollTimeMillis = -1;
+    private boolean isScrollerAnimatorOut = false;
 
     @Override
     protected void onDestroy() {
@@ -114,6 +127,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_main);
 
+        mHandler = new Handler();
+
         System.setProperty("jcifs.smb.client.responseTimeout", "10000");
         System.setProperty("jcifs.smb.client.soTimeout", "10000");
 
@@ -122,10 +137,58 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         excludeList.add("tmp");
 
         emptyText = (TextView) findViewById(R.id.empty_dir);
-        gridView = (GridView) findViewById(R.id.gridView);
-        gridAdapter = new GridAdapter(this, mImageFileList);
-        gridView.setAdapter(gridAdapter);
 
+        // setup image grid
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+
+        gridLayoutManager = new GridLayoutManager(this, 3);
+        recyclerView.setLayoutManager(gridLayoutManager);
+
+        VerticalRecyclerViewFastScroller fastScroller =
+                (VerticalRecyclerViewFastScroller) findViewById(R.id.fast_scroller);
+        fastScroller.setRecyclerView(recyclerView);
+        recyclerView.setOnScrollListener(fastScroller.getOnScrollListener());
+
+        scrollerContainer = (FrameLayout) fastScroller.getChildAt(0);
+
+        scrollerAnimatorListener = new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                isScrollerAnimatorOut = true;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        };
+
+        scrollerHideRunnable = new Runnable() {
+            @Override
+            public void run() {
+                YoYo.with(Techniques.SlideOutRight)
+                        .withListener(scrollerAnimatorListener)
+                        .duration(300)
+                        .playOn(scrollerContainer);
+            }
+        };
+
+        mHandler.postDelayed(scrollerHideRunnable, SCROLLER_HIDE_DELAY);
+
+        recyclerViewAdapter = new RecyclerViewAdapter(this, mImageFileList, this);
+        recyclerView.setAdapter(recyclerViewAdapter);
+        recyclerView.setHasFixedSize(true);
+        // setup viewpager
         mViewPager = (JazzyViewPager) findViewById(R.id.viewpager);
         mViewPager.setOnPageChangeListener(MainActivity.this);
         mViewPager.setOffscreenPageLimit(2);
@@ -148,113 +211,67 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 });
 
         // handle rotate gesture, rotate the image and save state.
-        mRotationDetector = new RotateGestureDetector(this, new RotateGestureDetector.OnRotateGestureListener() {
+        mRotationDetector = new RotateGestureDetector(this,
+                new RotateGestureDetector.OnRotateGestureListener() {
 
-            PhotoView photoView = null;
-            int rotate = 0;
+                    PhotoView photoView = null;
+                    int rotate = 0;
 
-            @Override
-            public boolean onRotate(RotateGestureDetector detector) {
+                    @Override
+                    public boolean onRotate(RotateGestureDetector detector) {
 
-                if (photoView != null) {
-                    float degree = detector.getRotationDegreesDelta();
-                    photoView.setRotation(-degree + rotate);
-                }
-                return false;
-            }
-
-            @Override
-            public boolean onRotateBegin(RotateGestureDetector detector) {
-                photoView = (PhotoView) mViewPager.findViewWithTag(mViewPager.getCurrentItem());
-                if (photoView != null) {
-                    int position = (int) photoView.getTag();
-                    if (rotationMap.containsKey(position)) {
-                        rotate = rotationMap.get(position);
+                        if (photoView != null) {
+                            float degree = detector.getRotationDegreesDelta();
+                            photoView.setRotation(-degree + rotate);
+                        }
+                        return false;
                     }
-                }
-                return true;
-            }
 
-            @Override
-            public void onRotateEnd(RotateGestureDetector detector) {
-                if (photoView != null) {
-                    // set rotation and save state
-                    float degree = -detector.getRotationDegreesDelta() + rotate;
-
-                    int n = Math.round(degree / 90);
-                    n = n % 4;
-                    if (n < 0) {
-                        n += 4;
-                    }
-                    switch (n) {
-                        case 0:
-                            photoView.setRotation(0);
-                            break;
-                        case 1:
-                            photoView.setRotation(90);
-                            break;
-                        case 2:
-                            photoView.setRotation(180);
-                            break;
-                        case 3:
-                            photoView.setRotation(270);
-                            break;
-                    }
-                    rotationMap.put((int) photoView.getTag(), (int) photoView.getRotation());
-                    rotate = 0;
-                    photoView = null;
-                }
-            }
-        });
-
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (mImageFileList.get(position).isDirectory()) {
-                    mPathStack.push(new PathInfo(mCurrentPath, position));
-
-                    if (mCurrentPath.equals(Config.ROOT_PATH)) {
-                        for (SambaInfo sambaInfo : sambaInfoList) {
-                            if (sambaInfo.build().equals(mImageFileList.get(position).getPath())) {
-                                currentSambaInfo = sambaInfo;
-                                break;
+                    @Override
+                    public boolean onRotateBegin(RotateGestureDetector detector) {
+                        photoView = (PhotoView) mViewPager.findViewWithTag(
+                                mViewPager.getCurrentItem());
+                        if (photoView != null) {
+                            int position = (int) photoView.getTag();
+                            if (rotationMap.containsKey(position)) {
+                                rotate = rotationMap.get(position);
                             }
                         }
-
-                    }
-                    mCurrentPath = mImageFileList.get(position).getPath();
-
-                    updateFileGrid();
-                    gridView.smoothScrollToPosition(0);
-                    gridView.setSelection(0);
-                } else {
-                    mGridPosition = position;
-
-                    mViewPager.setVisibility(View.VISIBLE);
-                    mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
-                    mViewPager.setCurrentItem(mImageList.indexOf(mImageFileList.get(position)), false);
-                    Log.d(TAG, "setCurrentItem:" + position);
-
-                    if (rotateType == RotateType.ROTATE_IMAGE_FIT_SCREEN) {
-                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                        return true;
                     }
 
-                    hideSystemUI();
+                    @Override
+                    public void onRotateEnd(RotateGestureDetector detector) {
+                        if (photoView != null) {
+                            // set rotation and save state
+                            float degree = -detector.getRotationDegreesDelta() + rotate;
 
-                }
-            }
-        });
-
-        gridView.setOnItemLongClickListener(new OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-
-//                ImageView checkView = (ImageView)view.findViewById(R.id.check);
-//                checkView.setVisibility(View.VISIBLE);
-                return true;
-            }
-        });
-
+                            int n = Math.round(degree / 90);
+                            n = n % 4;
+                            if (n < 0) {
+                                n += 4;
+                            }
+                            switch (n) {
+                                case 0:
+                                    photoView.setRotation(0);
+                                    break;
+                                case 1:
+                                    photoView.setRotation(90);
+                                    break;
+                                case 2:
+                                    photoView.setRotation(180);
+                                    break;
+                                case 3:
+                                    photoView.setRotation(270);
+                                    break;
+                            }
+                            rotationMap.put((int) photoView.getTag(),
+                                    (int) photoView.getRotation());
+                            rotate = 0;
+                            photoView = null;
+                        }
+                    }
+                });
     }
 
     @Override
@@ -287,7 +304,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         rotateType = RotateType.build(sharedPreferences.getString(Config.ROTATE_TYPE, "2"));
         localSortType = SortType.build(sharedPreferences.getString(Config.LOCAL_SORT_TYPE, "1"));
-        networkSortType = SortType.build(sharedPreferences.getString(Config.NETWORK_SORT_TYPE, "0"));
+        networkSortType = SortType.build(
+                sharedPreferences.getString(Config.NETWORK_SORT_TYPE, "0"));
 
         isFileExplorerMode = sharedPreferences.getBoolean(Config.FILE_EXPLORER_MODE, true);
         isShowHidingFiles = sharedPreferences.getBoolean(Config.SHOW_HIDING_FILES, false);
@@ -297,14 +315,15 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         // set grid animation
         String gridEffect = sharedPreferences.getString(Config.GRID_EFFECT, "Standard");
         String gridEffectDuration = sharedPreferences.getString(Config.GRID_EFFECT_DURATION, "450");
-        gridAdapter.setAnimator(gridEffect);
-        gridAdapter.setAnimationDuration(Integer.parseInt(gridEffectDuration));
+        //gridAdapter.setAnimator(gridEffect);
+        //gridAdapter.setAnimationDuration(Integer.parseInt(gridEffectDuration));
 
         // set viewpager animation
         String viewpagerEffect = sharedPreferences.getString(Config.VIEWPAGER_EFFECT, "Standard");
         if (viewpagerEffect != null) {
             // Fixme: need set nearby pagers effect too.
-            mViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.valueOf(viewpagerEffect));
+            mViewPager.setTransitionEffect(
+                    JazzyViewPager.TransitionEffect.valueOf(viewpagerEffect));
         }
 
         if (!serverPath.equals(currentSambaInfo.build())) {
@@ -370,8 +389,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         }
 
         // scroll grid to current image
-        gridView.smoothScrollToPosition(mGridPosition);
-        gridView.setSelection(mGridPosition);
+        recyclerView.smoothScrollToPosition(mGridPosition);
     }
 
     @Override
@@ -387,6 +405,11 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             // hide or show systemUI
             mClickDetector.onTouchEvent(ev);
             mRotationDetector.onTouchEvent(ev);
+        } else if (ev.getAction() == MotionEvent.ACTION_MOVE &&
+                   System.currentTimeMillis() - lastScrollTimeMillis > SCROLLER_HIDE_DELAY / 2) {
+            mHandler.removeCallbacks(scrollerHideRunnable);
+            mHandler.postDelayed(scrollerHideRunnable, SCROLLER_HIDE_DELAY);
+            lastScrollTimeMillis = System.currentTimeMillis();
         }
 
         return super.dispatchTouchEvent(ev);
@@ -442,7 +465,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         ImageFile imageFile = mImageList.get(position);
 
-        View view = getLayoutInflater().inflate(R.layout.dialog_detail, (ViewGroup) findViewById(android.R.id.content), false);
+        View view = getLayoutInflater().inflate(R.layout.dialog_detail,
+                (ViewGroup) findViewById(android.R.id.content), false);
 
         TextView path = (TextView) view.findViewById(R.id.detail_path);
         TextView type = (TextView) view.findViewById(R.id.detail_type);
@@ -510,7 +534,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 }
 
                 // add samba directories
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(
+                        MainActivity.this);
                 String servers = sharedPreferences.getString(Config.SERVERS, "");
                 if (servers != null && !servers.isEmpty()) {
 
@@ -525,7 +550,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                             try {
                                 SmbFile f = new SmbFile(samba.build(), samba.auth());
                                 if (f.canRead()) {
-                                    if (f.isDirectory() || f.isFile() && Utils.isImage(f.getName())) {
+                                    if (f.isDirectory() ||
+                                        f.isFile() && Utils.isImage(f.getName())) {
                                         mImageFileList.add(new ImageFile(f));
                                         sambaInfoList.add(samba);
                                         notifyListChanged();
@@ -595,8 +621,9 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                             if (!excludeList.contains(f.getName())) {
                                 // TODO: read show only image config
                                 if (f.isDirectory() && (isFileExplorerMode || f.hasImage()) ||
-                                        f.isFile() && Utils.isImage(f.getName())) {
-                                    if (isShowHidingFiles || (!isShowHidingFiles && !f.isHiding())) {
+                                    f.isFile() && Utils.isImage(f.getName())) {
+                                    if (isShowHidingFiles ||
+                                        (!isShowHidingFiles && !f.isHiding())) {
                                         mImageFileList.add(f);
                                     }
                                 }
@@ -631,7 +658,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     }
 
     private void loadImage(final ImageFile file, final ImageView imageView, final int position,
-                           final boolean isHighQuality, final boolean autoRotate) {
+            final boolean isHighQuality, final boolean autoRotate) {
 
         final WeakReference<ImageView> imageViewWeakReference = new WeakReference<>(imageView);
 
@@ -639,7 +666,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             @Override
             public void run() {
 
-                if (mViewPager != null && mImageFileList.indexOf(mImageList.get(position)) != mGridPosition) {
+                if (mViewPager != null &&
+                    mImageFileList.indexOf(mImageList.get(position)) != mGridPosition) {
                     try {
                         Thread.sleep(20);
                     } catch (InterruptedException e) {
@@ -650,7 +678,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 imageLoadLock.lock();
 
                 try {
-                    if (imageViewWeakReference.get() == null || mViewPager.getVisibility() == View.GONE) {
+                    if (imageViewWeakReference.get() == null ||
+                        mViewPager.getVisibility() == View.GONE) {
                         return;
                     }
 
@@ -680,8 +709,10 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     if (!isHighQuality) {
                         options.inPreferredConfig = Bitmap.Config.RGB_565;
                         options.inSampleSize = Config.IMAGE_SIMPLE_SIZE;
-                        originBitmap = BitmapFactory.decodeStream(file.getInputStream(), null, options);
-                    } else if (imageHeight > Config.MAX_IMAGE_SIZE || imageWidth > Config.MAX_IMAGE_SIZE) {
+                        originBitmap = BitmapFactory.decodeStream(file.getInputStream(), null,
+                                options);
+                    } else if (imageHeight > Config.MAX_IMAGE_SIZE ||
+                               imageWidth > Config.MAX_IMAGE_SIZE) {
                         // resize image to accepted size
                         Bitmap tmpBitmap = BitmapFactory.decodeStream(file.getInputStream());
 
@@ -690,7 +721,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
                         double scale = heightScale < widthScale ? heightScale : widthScale;
                         //originBitmap = ThumbnailUtils.extractThumbnail(tmpBitmap, (int)(imageWidth*scale),(int)(imageHeight*scale));
-                        originBitmap = Bitmap.createScaledBitmap(tmpBitmap, (int) (imageWidth * scale), (int) (imageHeight * scale), true);
+                        originBitmap = Bitmap.createScaledBitmap(tmpBitmap,
+                                (int) (imageWidth * scale), (int) (imageHeight * scale), true);
                         tmpBitmap.recycle();
                     } else {
                         originBitmap = BitmapFactory.decodeStream(file.getInputStream());
@@ -729,7 +761,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     if (file.isGif()) {
                         BufferedInputStream bis = null;
                         try {
-                            bis = new BufferedInputStream(file.getInputStream(), (int) file.getContentLength());
+                            bis = new BufferedInputStream(file.getInputStream(),
+                                    (int) file.getContentLength());
                         } catch (IOException e) {
                             e.printStackTrace();
                         } finally {
@@ -774,11 +807,17 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                                 int orientation = getRequestedOrientation();
 
                                 if (autoRotate) {
-                                    if (mViewPager != null && position == mViewPager.getCurrentItem() && rotateType == RotateType.ROTATE_SCREEN_FIT_IMAGE) {
-                                        if (orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-                                            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                                        } else if (!orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-                                            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                                    if (mViewPager != null &&
+                                        position == mViewPager.getCurrentItem() &&
+                                        rotateType == RotateType.ROTATE_SCREEN_FIT_IMAGE) {
+                                        if (orientationMap.get(position) && orientation !=
+                                                                            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                                            setRequestedOrientation(
+                                                    ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                                        } else if (!orientationMap.get(position) && orientation !=
+                                                                                    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                                            setRequestedOrientation(
+                                                    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                                         }
                                     }
                                 }
@@ -816,8 +855,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 if (mViewPager != null && mViewPager.getAdapter() != null) {
                     mViewPager.getAdapter().notifyDataSetChanged();
                 }
-                gridAdapter.clearThumbnailList();
-                gridAdapter.notifyDataSetChanged();
+                recyclerViewAdapter.clearThumbnailList();
+                recyclerViewAdapter.notifyDataSetChanged();
             }
         });
     }
@@ -845,9 +884,11 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                     if (orientationMap.get(position) != null) {
                         int orientation = getRequestedOrientation();
 
-                        if (orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                        if (orientationMap.get(position) &&
+                            orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
                             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                        } else if (!orientationMap.get(position) && orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                        } else if (!orientationMap.get(position) &&
+                                   orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
                             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                         }
                     }
@@ -864,7 +905,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
                 if (lastPagePosition != -1 && lastPagePosition != position) {
                     if (!mImageList.get(lastPagePosition).isGif()) {
                         loadImage(mImageList.get(lastPagePosition),
-                                (PhotoView) mViewPager.findViewWithTag(lastPagePosition), lastPagePosition, false, false);
+                                (PhotoView) mViewPager.findViewWithTag(lastPagePosition),
+                                lastPagePosition, false, false);
                     }
                 }
                 lastPagePosition = position;
@@ -875,18 +917,18 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     private void hideSystemUI() {
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
     private void showSystemUI() {
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
 
     private void hideSystemUIDelayed(int timeout) {
@@ -913,7 +955,59 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
     }
 
     private boolean isSystemUIVisible() {
-        return (getWindow().getDecorView().getSystemUiVisibility() & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0;
+        return (getWindow().getDecorView().getSystemUiVisibility() &
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0;
+    }
+
+    @Override
+    public void onItemClicked(View view, int position) {
+        if (mImageFileList.get(position).isDirectory()) {
+            mPathStack.push(new PathInfo(mCurrentPath, position));
+
+            if (mCurrentPath.equals(Config.ROOT_PATH)) {
+                for (SambaInfo sambaInfo : sambaInfoList) {
+                    if (sambaInfo.build().equals(mImageFileList.get(position).getPath())) {
+                        currentSambaInfo = sambaInfo;
+                        break;
+                    }
+                }
+
+            }
+            mCurrentPath = mImageFileList.get(position).getPath();
+
+            updateFileGrid();
+            recyclerView.smoothScrollToPosition(0);
+        } else {
+            mGridPosition = position;
+
+            mViewPager.setVisibility(View.VISIBLE);
+            mViewPager.setAdapter(new ViewPagerAdapter(mImageList));
+            mViewPager.setCurrentItem(mImageList.indexOf(mImageFileList.get(position)),
+                    false);
+            Log.d(TAG, "setCurrentItem:" + position);
+
+            if (rotateType == RotateType.ROTATE_IMAGE_FIT_SCREEN) {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            }
+
+            hideSystemUI();
+
+        }
+    }
+
+    @Override
+    public void onBindViewHolder(int position) {
+        if (isScrollerAnimatorOut) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    YoYo.with(Techniques.SlideInRight)
+                            .duration(300)
+                            .playOn(scrollerContainer);
+                }
+            });
+            isScrollerAnimatorOut = false;
+        }
     }
 
     private class ViewPagerAdapter extends PagerAdapter {
@@ -960,7 +1054,8 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             Log.d(TAG, "getCurrentItem:" + mViewPager.getCurrentItem());
             Log.d(TAG, "loadImage: " + position);
             loadImage(imageList.get(position), photoView, position, false, true);
-            container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT);
             mViewPager.setObjectForPosition(photoView, position);
 
             return photoView;
