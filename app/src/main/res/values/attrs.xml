@@ -21,4 +21,9 @@
         <attr name="outlineColor" format="color|reference" />
     </declare-styleable>
 
+    <attr name="rfs_barColor" format="color|reference" />
+    <attr name="rfs_barBackground" format="reference" />
+    <attr name="rfs_handleColor" format="color|reference" />
+    <attr name="rfs_handleBackground" format="reference" />
+
 </resources>

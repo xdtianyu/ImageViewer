@@ -7,7 +7,7 @@
     <color name="check_background">#80000000</color>
     <color name="transparent">#00000000</color>
 
-    <color name="fastScrollHandleColor">#FFF</color>
-    <color name="fastScrollBarColor">#ffcecece</color>
+    <color name="fastScrollHandleColor">#2196f3</color>
+    <color name="fastScrollBarColor">#00cecece</color>
 
 </resources>
