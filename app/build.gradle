@@ -25,7 +25,7 @@ dependencies {
     compile 'com.android.support:support-v4:22.1.1'
     compile 'com.android.support:appcompat-v7:22.1.1'
     compile 'com.android.support:recyclerview-v7:22.1.0'
-    compile 'xyz.danoz:recyclerviewfastscroller:0.1.3'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.1.6'
     compile 'com.twotoasters.SectionCursorAdapter:library:2.0.1'
+    compile project(':recyclerviewfastscroller')
 }
