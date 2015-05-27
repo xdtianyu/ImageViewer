@@ -389,17 +389,18 @@ public class MainActivity extends Activity
         } else {
             super.onBackPressed();
         }
-
-
+        
         // scroll grid to current image
         int lastVisiblePosition = gridLayoutManager.findLastVisibleItemPosition();
+        int firstFullVisiblePosition = gridLayoutManager.findFirstCompletelyVisibleItemPosition();
 
         if (mGridPosition > lastVisiblePosition) {
             gridLayoutManager.scrollToPositionWithOffset(
                     mGridPosition - getItemCountInWindow() + gridLayoutManager.getSpanCount(),
                     -getItemHeight());
+        } else if (mGridPosition < firstFullVisiblePosition) {
+            gridLayoutManager.scrollToPositionWithOffset(mGridPosition, getItemHeight());
         }
-        Log.e(TAG, "recyclerView:" + mGridPosition + ":" + getItemCountInWindow());
     }
 
     @Override
