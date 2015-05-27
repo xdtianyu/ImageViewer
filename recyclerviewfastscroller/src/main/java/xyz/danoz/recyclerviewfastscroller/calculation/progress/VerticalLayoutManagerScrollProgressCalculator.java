@@ -16,6 +16,10 @@ import xyz.danoz.recyclerviewfastscroller.calculation.VerticalScrollBoundsProvid
  */
 public class VerticalLayoutManagerScrollProgressCalculator extends VerticalScrollProgressCalculator {
 
+    private int lastSection = 0;
+    private int deltaY = 0;
+    private float deltaSection = 0;
+
     public VerticalLayoutManagerScrollProgressCalculator(
             VerticalScrollBoundsProvider scrollBoundsProvider, int handleHeight) {
         super(scrollBoundsProvider, handleHeight);
@@ -66,13 +70,10 @@ public class VerticalLayoutManagerScrollProgressCalculator extends VerticalScrol
         return (float) currentSection / numScrollableSectionsInList;
     }
 
-    private int lastSection = 0;
-    private int deltaY = 0;
-
     /**
      * @param recyclerView recycler that experiences a scroll event
-     * @param dx The amount of horizontal scroll.
-     * @param dy The amount of vertical scroll.
+     * @param dx           The amount of horizontal scroll.
+     * @param dy           The amount of vertical scroll.
      * @return the progress through the recycler view list content
      */
     public float calculateScrollProgress(RecyclerView recyclerView, int dx, int dy) {
@@ -100,6 +101,7 @@ public class VerticalLayoutManagerScrollProgressCalculator extends VerticalScrol
         View visibleChild = recyclerView.getChildAt(0);
         if (visibleChild == null) {
             return 0;
+
         }
         ViewHolder holder = recyclerView.getChildViewHolder(visibleChild);
         int itemHeight = holder.itemView.getHeight();
@@ -110,8 +112,8 @@ public class VerticalLayoutManagerScrollProgressCalculator extends VerticalScrol
 
         int numItemsInList = recyclerView.getAdapter().getItemCount();
 
-        int rowCount = numItemsInList/spanCount + (numItemsInList%spanCount!=0?1:0);
-        int recyclerFullHeight = itemHeight*rowCount;
+        int rowCount = numItemsInList / spanCount + (numItemsInList % spanCount != 0 ? 1 : 0);
+        int recyclerFullHeight = itemHeight * rowCount;
 
         int numScrollableSectionsInList = numItemsInList - itemsInWindow;
         int indexOfLastFullyVisibleItemInFirstSection = numItemsInList - numScrollableSectionsInList - 1;
@@ -120,16 +122,26 @@ public class VerticalLayoutManagerScrollProgressCalculator extends VerticalScrol
 
         float deltaProgress = 0;
 
+        /*
+        ** Fixme: if spanCount is big enough e.g. 10, too fast scroll back will have a top offset
+        ** Because deltaProgress is 0 (need to be negative) but still plus a deltaSection.
+        */
         if (lastSection == currentSection) {
             deltaY += dy;
-            deltaProgress = (float)deltaY/(recyclerFullHeight-recyclerHeight);
+            deltaProgress = (float) deltaY / (recyclerFullHeight - recyclerHeight);
         } else {
+            if (Math.abs(deltaY) < 30) {
+                if (lastSection < currentSection) {
+                    deltaSection = 0;
+                } else {
+                    // plus spanCount
+                    deltaSection = (float) spanCount;
+                }
+            }
             lastSection = currentSection;
+
             deltaY = 0;
         }
-
-        double y = mScrollBoundsProvider.getMaximumScrollY()*((float) currentSection / numScrollableSectionsInList + deltaProgress);
-
-        return (float) (currentSection) / numScrollableSectionsInList + deltaProgress;
+        return (currentSection + deltaSection) / numScrollableSectionsInList + deltaProgress;
     }
 }

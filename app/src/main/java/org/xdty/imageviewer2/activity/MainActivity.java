@@ -112,6 +112,8 @@ public class MainActivity extends Activity
     private Runnable scrollerHideRunnable;
     private long lastScrollTimeMillis = -1;
     private boolean isScrollerAnimatorOut = false;
+    private int itemHeight;
+    private int itemCountInWindow;
 
     @Override
     protected void onDestroy() {
@@ -388,8 +390,16 @@ public class MainActivity extends Activity
             super.onBackPressed();
         }
 
+
         // scroll grid to current image
-        recyclerView.smoothScrollToPosition(mGridPosition);
+        int lastVisiblePosition = gridLayoutManager.findLastVisibleItemPosition();
+
+        if (mGridPosition > lastVisiblePosition) {
+            gridLayoutManager.scrollToPositionWithOffset(
+                    mGridPosition - getItemCountInWindow() + gridLayoutManager.getSpanCount(),
+                    -getItemHeight());
+        }
+        Log.e(TAG, "recyclerView:" + mGridPosition + ":" + getItemCountInWindow());
     }
 
     @Override
@@ -406,7 +416,7 @@ public class MainActivity extends Activity
             mClickDetector.onTouchEvent(ev);
             mRotationDetector.onTouchEvent(ev);
         } else if (ev.getAction() == MotionEvent.ACTION_MOVE &&
-                   System.currentTimeMillis() - lastScrollTimeMillis > SCROLLER_HIDE_DELAY / 2) {
+                System.currentTimeMillis() - lastScrollTimeMillis > SCROLLER_HIDE_DELAY / 2) {
             mHandler.removeCallbacks(scrollerHideRunnable);
             mHandler.postDelayed(scrollerHideRunnable, SCROLLER_HIDE_DELAY);
             lastScrollTimeMillis = System.currentTimeMillis();
@@ -458,6 +468,25 @@ public class MainActivity extends Activity
         }
 
         return result || super.onOptionsItemSelected(item);
+    }
+
+    private int getItemHeight() {
+        if (itemHeight == 0) {
+            View visibleChild = recyclerView.getChildAt(0);
+            RecyclerView.ViewHolder holder = recyclerView.getChildViewHolder(visibleChild);
+            itemHeight = holder.itemView.getHeight();
+        }
+        return itemHeight;
+    }
+
+    private int getItemCountInWindow() {
+        // Fixme: orientation change can result in different number.
+        if (itemCountInWindow == 0) {
+            int recyclerHeight = recyclerView.getHeight();
+            itemCountInWindow =
+                    (recyclerHeight / getItemHeight()) * gridLayoutManager.getSpanCount();
+        }
+        return itemCountInWindow;
     }
 
     private void showDetailDialog() {
@@ -551,7 +580,7 @@ public class MainActivity extends Activity
                                 SmbFile f = new SmbFile(samba.build(), samba.auth());
                                 if (f.canRead()) {
                                     if (f.isDirectory() ||
-                                        f.isFile() && Utils.isImage(f.getName())) {
+                                            f.isFile() && Utils.isImage(f.getName())) {
                                         mImageFileList.add(new ImageFile(f));
                                         sambaInfoList.add(samba);
                                         notifyListChanged();
@@ -621,9 +650,9 @@ public class MainActivity extends Activity
                             if (!excludeList.contains(f.getName())) {
                                 // TODO: read show only image config
                                 if (f.isDirectory() && (isFileExplorerMode || f.hasImage()) ||
-                                    f.isFile() && Utils.isImage(f.getName())) {
+                                        f.isFile() && Utils.isImage(f.getName())) {
                                     if (isShowHidingFiles ||
-                                        (!isShowHidingFiles && !f.isHiding())) {
+                                            (!isShowHidingFiles && !f.isHiding())) {
                                         mImageFileList.add(f);
                                     }
                                 }
@@ -667,7 +696,7 @@ public class MainActivity extends Activity
             public void run() {
 
                 if (mViewPager != null &&
-                    mImageFileList.indexOf(mImageList.get(position)) != mGridPosition) {
+                        mImageFileList.indexOf(mImageList.get(position)) != mGridPosition) {
                     try {
                         Thread.sleep(20);
                     } catch (InterruptedException e) {
@@ -679,7 +708,7 @@ public class MainActivity extends Activity
 
                 try {
                     if (imageViewWeakReference.get() == null ||
-                        mViewPager.getVisibility() == View.GONE) {
+                            mViewPager.getVisibility() == View.GONE) {
                         return;
                     }
 
@@ -712,7 +741,7 @@ public class MainActivity extends Activity
                         originBitmap = BitmapFactory.decodeStream(file.getInputStream(), null,
                                 options);
                     } else if (imageHeight > Config.MAX_IMAGE_SIZE ||
-                               imageWidth > Config.MAX_IMAGE_SIZE) {
+                            imageWidth > Config.MAX_IMAGE_SIZE) {
                         // resize image to accepted size
                         Bitmap tmpBitmap = BitmapFactory.decodeStream(file.getInputStream());
 
@@ -808,14 +837,14 @@ public class MainActivity extends Activity
 
                                 if (autoRotate) {
                                     if (mViewPager != null &&
-                                        position == mViewPager.getCurrentItem() &&
-                                        rotateType == RotateType.ROTATE_SCREEN_FIT_IMAGE) {
+                                            position == mViewPager.getCurrentItem() &&
+                                            rotateType == RotateType.ROTATE_SCREEN_FIT_IMAGE) {
                                         if (orientationMap.get(position) && orientation !=
-                                                                            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                                                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
                                             setRequestedOrientation(
                                                     ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                                         } else if (!orientationMap.get(position) && orientation !=
-                                                                                    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                                                ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
                                             setRequestedOrientation(
                                                     ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                                         }
@@ -870,6 +899,7 @@ public class MainActivity extends Activity
     public void onPageSelected(int position) {
         //Log.d(TAG, "onPageSelected:" + position);
         mGridPosition = mImageFileList.indexOf(mImageList.get(position));
+        Log.d(TAG, "onPageSelected:" + mGridPosition);
     }
 
     @Override
@@ -885,10 +915,10 @@ public class MainActivity extends Activity
                         int orientation = getRequestedOrientation();
 
                         if (orientationMap.get(position) &&
-                            orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                                orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
                             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                         } else if (!orientationMap.get(position) &&
-                                   orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                                orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
                             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                         }
                     }
@@ -917,18 +947,18 @@ public class MainActivity extends Activity
     private void hideSystemUI() {
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
     private void showSystemUI() {
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
 
     private void hideSystemUIDelayed(int timeout) {
@@ -979,6 +1009,8 @@ public class MainActivity extends Activity
             recyclerView.smoothScrollToPosition(0);
         } else {
             mGridPosition = position;
+
+            getItemCountInWindow();
 
             mViewPager.setVisibility(View.VISIBLE);
             mViewPager.setAdapter(new ViewPagerAdapter(mImageList));

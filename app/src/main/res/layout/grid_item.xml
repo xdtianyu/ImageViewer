@@ -1,48 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<org.xdty.imageviewer2.view.SquareLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<org.xdty.imageviewer2.view.SquareLinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/dir_layout"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_height="fill_parent"
+    android:padding="@dimen/grid_item_padding"
+    android:orientation="vertical">
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/item_background">
+
         <ImageView
+            android:id="@+id/thumbnail"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:id="@+id/thumbnail"
-            android:scaleType="centerCrop"
-            android:contentDescription="@string/image_item_description"/>
+            android:contentDescription="@string/image_item_description"
+            android:scaleType="centerCrop"/>
+
         <ImageView
+            android:id="@+id/lock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/lock"
-            android:contentDescription="@string/lock_description"
             android:layout_gravity="bottom|end"
-            android:visibility="gone"
+            android:contentDescription="@string/lock_description"
             android:padding="@dimen/lock_padding"
-            android:src="@mipmap/lock_small"/>
+            android:src="@mipmap/lock_small"
+            android:visibility="gone"/>
+
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:background="@color/text_background">
+
             <TextView
+                android:id="@+id/title"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/title"
-                android:singleLine="true"
-                android:padding="@dimen/grid_text_padding" />
+                android:padding="@dimen/grid_text_padding"
+                android:singleLine="true"/>
         </RelativeLayout>
+
         <ImageView
+            android:id="@+id/check"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:id="@+id/check"
-            android:src="@mipmap/check"
             android:background="@color/check_background"
-            android:visibility="gone"
             android:contentDescription="@string/check_description"
+            android:src="@mipmap/check"
+            android:visibility="gone"
             />
     </FrameLayout>
 </org.xdty.imageviewer2.view.SquareLinearLayout>

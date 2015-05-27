@@ -23,6 +23,13 @@ class FastScrollerTouchListener implements OnTouchListener {
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+
+        if (event.getAction()==MotionEvent.ACTION_DOWN) {
+            mFastScroller.enableOnScrollerListener(false);
+        } else if (event.getAction()==MotionEvent.ACTION_UP) {
+            mFastScroller.enableOnScrollerListener(true);
+        }
+
         SectionIndicator sectionIndicator = mFastScroller.getSectionIndicator();
         showOrHideIndicator(sectionIndicator, event);
 
