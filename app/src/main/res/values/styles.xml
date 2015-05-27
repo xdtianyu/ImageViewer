@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="@android:style/Theme.Holo">
+        <item name="android:windowActionBar">true</item>
+        <item name="android:windowNoTitle">false</item>
+        <item name="android:actionBarStyle">@style/action_bar_theme</item>
+        <!--<item name="android:actionMenuTextColor">#fff</item>-->
+    </style>
+    <style name="action_bar_theme" parent="@android:style/Widget.Holo.ActionBar.Solid">
+        <item name="android:background">#60000000</item>
+    </style>
+    <style name="static_text_style">
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:textSize">15sp</item>
+
+    </style>
+    <style name="edit_text_style">
+        <item name="android:layout_weight">2.5</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">0dp</item>
+    </style>
+
+    <style name="AddShareTheme" parent="@android:style/Theme.Holo">
+        <item name="android:actionButtonStyle">@style/action_button_style</item>
+    </style>
+
+    <style name="action_button_style" parent="@android:style/Theme.Holo">
+        <item name="android:minWidth">50dp</item>
+        <item name="android:paddingRight">0dp</item>
+    </style>
+
+    <style name="detail_text">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">right</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="detail_text_context">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_marginLeft">10dp</item>
+        <item name="android:layout_weight">4</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    <style name="detail_layout">
+        <item name="android:padding">5dp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+</resources>
