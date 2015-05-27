@@ -163,4 +163,8 @@ public class Utils {
         return format.format(date);
     }
 
+    public static String getNameFromPath(String path) {
+        return path.substring(path.lastIndexOf('/')+1);
+    }
+
 }

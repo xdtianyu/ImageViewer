@@ -373,6 +373,8 @@ public class MainActivity extends Activity
                 updateGridOnBack = false;
             }
 
+            setTitle(Utils.getNameFromPath(mCurrentPath));
+
             mViewPager.setAdapter(null);
             lastPagePosition = -1;
 
@@ -389,7 +391,7 @@ public class MainActivity extends Activity
         } else {
             super.onBackPressed();
         }
-        
+
         // scroll grid to current image
         int lastVisiblePosition = gridLayoutManager.findLastVisibleItemPosition();
         int firstFullVisiblePosition = gridLayoutManager.findFirstCompletelyVisibleItemPosition();
@@ -544,8 +546,10 @@ public class MainActivity extends Activity
         if (mCurrentPath.equals(Config.ROOT_PATH)) {
             emptyText.setVisibility(View.GONE);
             loadRootDir();
+            setTitle(getString(R.string.app_name));
         } else {
             loadDir(mCurrentPath);
+            setTitle(Utils.getNameFromPath(mCurrentPath));
         }
     }
 
@@ -900,6 +904,7 @@ public class MainActivity extends Activity
     public void onPageSelected(int position) {
         //Log.d(TAG, "onPageSelected:" + position);
         mGridPosition = mImageFileList.indexOf(mImageList.get(position));
+        setTitle(mImageList.get(position).getName());
         Log.d(TAG, "onPageSelected:" + mGridPosition);
     }
 
@@ -992,6 +997,9 @@ public class MainActivity extends Activity
 
     @Override
     public void onItemClicked(View view, int position) {
+
+        setTitle(mImageFileList.get(position).getName());
+
         if (mImageFileList.get(position).isDirectory()) {
             mPathStack.push(new PathInfo(mCurrentPath, position));
 
@@ -1024,7 +1032,6 @@ public class MainActivity extends Activity
             }
 
             hideSystemUI();
-
         }
     }
 
