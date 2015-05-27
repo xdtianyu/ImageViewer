@@ -164,7 +164,11 @@ public class Utils {
     }
 
     public static String getNameFromPath(String path) {
-        return path.substring(path.lastIndexOf('/')+1);
+        if (path.endsWith("/")) {
+            return path.substring(path.lastIndexOf('/', path.length()-2)+1);
+        } else {
+            return path.substring(path.lastIndexOf('/')+1);
+        }
     }
 
 }

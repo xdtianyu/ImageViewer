@@ -378,6 +378,18 @@ public class MainActivity extends Activity
             mViewPager.setAdapter(null);
             lastPagePosition = -1;
 
+            // scroll grid to current image
+            int lastVisiblePosition = gridLayoutManager.findLastVisibleItemPosition();
+            int firstFullVisiblePosition =
+                    gridLayoutManager.findFirstCompletelyVisibleItemPosition();
+
+            if (mGridPosition > lastVisiblePosition) {
+                gridLayoutManager.scrollToPositionWithOffset(
+                        mGridPosition - getItemCountInWindow() + gridLayoutManager.getSpanCount(),
+                        -getItemHeight());
+            } else if (mGridPosition < firstFullVisiblePosition) {
+                gridLayoutManager.scrollToPositionWithOffset(mGridPosition, getItemHeight());
+            }
         } else if (mPathStack.size() > 0) {
             PathInfo pathInfo = mPathStack.pop();
             mCurrentPath = pathInfo.path;
@@ -385,23 +397,14 @@ public class MainActivity extends Activity
 
             updateFileGrid();
 
+            // Fixme: not working
+            gridLayoutManager.scrollToPosition(mGridPosition);
+
             if (emptyText.getVisibility() == View.VISIBLE) {
                 emptyText.setVisibility(View.GONE);
             }
         } else {
             super.onBackPressed();
-        }
-
-        // scroll grid to current image
-        int lastVisiblePosition = gridLayoutManager.findLastVisibleItemPosition();
-        int firstFullVisiblePosition = gridLayoutManager.findFirstCompletelyVisibleItemPosition();
-
-        if (mGridPosition > lastVisiblePosition) {
-            gridLayoutManager.scrollToPositionWithOffset(
-                    mGridPosition - getItemCountInWindow() + gridLayoutManager.getSpanCount(),
-                    -getItemHeight());
-        } else if (mGridPosition < firstFullVisiblePosition) {
-            gridLayoutManager.scrollToPositionWithOffset(mGridPosition, getItemHeight());
         }
     }
 
@@ -1015,7 +1018,6 @@ public class MainActivity extends Activity
             mCurrentPath = mImageFileList.get(position).getPath();
 
             updateFileGrid();
-            recyclerView.smoothScrollToPosition(0);
         } else {
             mGridPosition = position;
 
