@@ -1,3 +1,15 @@
+version 1.6.0 (2015-05-28)
+
+1. Add recycler view, add fast scroll bar
+2. Add android 4.0 (ICE_CREAM_SANDWICH) support
+3. Fix grid position
+4. Add action bar title
+5. Fix grid list top padding
+
+version 1.5.2 (2015-05-25)
+
+1. Fix jpeg
+
 version 1.5.1 (2015-05-24)
 
 1. Fix jepg support
