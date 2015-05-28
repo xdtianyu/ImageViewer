@@ -46,8 +46,8 @@
     <string name="detail_size">大小</string>
     <string name="detail_type">类型</string>
     <string name="effect">动画特效</string>
-    <string name="grid_effect">列表特效</string>
-    <string name="grid_effect_duration">列表特效速度</string>
+    <string name="grid_effect">图片列表加载动画</string>
+    <string name="grid_effect_duration">图片列表动画速度</string>
     <string name="bounce">弹跳</string>
     <string name="bounce_in">弹跳进入</string>
     <string name="bounce_in_down">向下弹跳进入</string>
@@ -93,6 +93,6 @@
     <string name="rotate_up">向上旋转</string>
     <string name="stack">堆叠</string>
     <string name="tablet">滑片</string>
-    <string name="viewpager_effect">图片滑动特效</string>
+    <string name="viewpager_effect">图片切换动画</string>
     <string name="zoom_out">缩小</string>
 </resources>

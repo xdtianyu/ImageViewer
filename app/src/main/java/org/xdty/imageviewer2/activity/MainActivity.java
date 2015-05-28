@@ -317,8 +317,8 @@ public class MainActivity extends Activity
         // set grid animation
         String gridEffect = sharedPreferences.getString(Config.GRID_EFFECT, "Standard");
         String gridEffectDuration = sharedPreferences.getString(Config.GRID_EFFECT_DURATION, "450");
-        //gridAdapter.setAnimator(gridEffect);
-        //gridAdapter.setAnimationDuration(Integer.parseInt(gridEffectDuration));
+        recyclerViewAdapter.setAnimator(gridEffect);
+        recyclerViewAdapter.setAnimationDuration(Integer.parseInt(gridEffectDuration));
 
         // set viewpager animation
         String viewpagerEffect = sharedPreferences.getString(Config.VIEWPAGER_EFFECT, "Standard");

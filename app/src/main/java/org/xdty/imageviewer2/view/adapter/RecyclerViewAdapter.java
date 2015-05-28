@@ -15,6 +15,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.daimajia.androidanimations.library.BaseViewAnimator;
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
+
 import org.xdty.imageviewer2.R;
 import org.xdty.imageviewer2.model.Config;
 import org.xdty.imageviewer2.model.ImageFile;
@@ -54,6 +58,8 @@ public class RecyclerViewAdapter extends Adapter<ViewHolder> {
     private Bitmap folderBitmap;
 
     private OnItemClickListener mListener;
+    private String animationEffect;
+    private int animationDuration = 450;
 
     public RecyclerViewAdapter(Context c, ArrayList<ImageFile> list, OnItemClickListener listener) {
         mContext = c;
@@ -115,6 +121,17 @@ public class RecyclerViewAdapter extends Adapter<ViewHolder> {
         } catch (IndexOutOfBoundsException e) {
             e.printStackTrace();
         }
+
+        // add grid animation
+        if (animationEffect != null && !animationEffect.equals("Standard")) {
+            BaseViewAnimator animator = Techniques.valueOf(animationEffect).getAnimator();
+            try {
+                YoYo.with(animator).duration(animationDuration).playOn(holder.itemView);
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
     @Override
@@ -188,8 +205,8 @@ public class RecyclerViewAdapter extends Adapter<ViewHolder> {
                             @Override
                             public void run() {
                                 if (mImageList.size() > position &&
-                                    mImageList.get(position).getName().equals(fileName) &&
-                                    imageView.getTag().equals(fileName)) {
+                                        mImageList.get(position).getName().equals(fileName) &&
+                                        imageView.getTag().equals(fileName)) {
                                     imageView.setImageBitmap(bitmap);
                                 }
                             }
@@ -248,8 +265,9 @@ public class RecyclerViewAdapter extends Adapter<ViewHolder> {
                                     @Override
                                     public void run() {
                                         if (mImageList.size() > position &&
-                                            mImageList.get(position).getName().equals(fileName) &&
-                                            imageView.getTag().equals(fileName)) {
+                                                mImageList.get(position).getName().equals(
+                                                        fileName) &&
+                                                imageView.getTag().equals(fileName)) {
                                             imageView.setImageBitmap(bitmap);
                                         }
                                     }
@@ -272,8 +290,17 @@ public class RecyclerViewAdapter extends Adapter<ViewHolder> {
         mThumbnailList.clear();
     }
 
+    public void setAnimator(String effect) {
+        this.animationEffect = effect;
+    }
+
+    public void setAnimationDuration(int duration) {
+        this.animationDuration = duration;
+    }
+
     public interface OnItemClickListener {
         void onItemClicked(View view, int position);
+
         void onBindViewHolder(int position);
     }
 
