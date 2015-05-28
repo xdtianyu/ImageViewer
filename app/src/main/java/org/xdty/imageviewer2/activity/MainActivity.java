@@ -1,5 +1,6 @@
 package org.xdty.imageviewer2.activity;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -10,6 +11,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -24,6 +26,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -954,20 +957,55 @@ public class MainActivity extends Activity
     }
 
     private void hideSystemUI() {
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
+        int flags = 0;
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            flags = View.SYSTEM_UI_FLAG_LOW_PROFILE;
+
+            ActionBar actionBar = getActionBar();
+            if (actionBar != null) {
+                actionBar.hide();
+            }
+
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            flags = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            flags = flags | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        }
+
+        getWindow().getDecorView().setSystemUiVisibility(flags);
     }
 
     private void showSystemUI() {
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+
+        int flags = 0;
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            flags = View.SYSTEM_UI_FLAG_VISIBLE;
+
+            ActionBar actionBar = getActionBar();
+            if (actionBar != null) {
+                actionBar.show();
+            }
+            
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(flags);
     }
 
     private void hideSystemUIDelayed(int timeout) {
@@ -994,8 +1032,13 @@ public class MainActivity extends Activity
     }
 
     private boolean isSystemUIVisible() {
-        return (getWindow().getDecorView().getSystemUiVisibility() &
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            return (getWindow().getDecorView().getSystemUiVisibility() &
+                    View.SYSTEM_UI_FLAG_LOW_PROFILE) == 0;
+        } else {
+            return (getWindow().getDecorView().getSystemUiVisibility() &
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0;
+        }
     }
 
     @Override
