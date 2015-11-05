@@ -1,6 +1,8 @@
 # ImageViewer #
 
-ImageViewer is an open source image viewer for LAN/WAN's samba shared photos.
+ImageViewer is an open source image viewer for LAN/WAN's samba shared photos. It's still under development.
+
+[![Google Play](http://developer.android.com/images/brand/en_generic_rgb_wo_45.png)](https://play.google.com/store/apps/details?id=org.xdty.imageviewer2)
 
 ### Contribution guidelines ###
 
